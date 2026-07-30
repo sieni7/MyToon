@@ -1,39 +1,53 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import Layout from './components/layout/Layout'
+import SplashScreen from './components/hero/SplashScreen'
 import Hero from './components/hero/Hero'
 import UploadArea from './components/upload/UploadArea'
 import StyleSelector from './components/preview/StyleSelector'
 import TShirtPreview from './components/preview/TShirtPreview'
 import Features from './components/features/Features'
-import Steps from './components/features/Steps'
-import CTA from './components/cta/CTA'
+import Phases from './components/features/Phases'
+import Testimonials from './components/features/Testimonials'
+import FAQ from './components/features/FAQ'
 import Gallery from './components/gallery/Gallery'
+import CTA from './components/cta/CTA'
+import StickyCart from './components/layout/StickyCart'
+import ProgressBar from './components/layout/ProgressBar'
 import { useImageUpload } from './hooks/useImageUpload'
 import { STYLES, PRODUCTS } from './utils/constants'
 import './styles/globals.css'
 import './styles/responsive.css'
 
 export default function App() {
+  const [splashDone, setSplashDone] = useState(false)
   const { preview, loading, error, handleFile, reset } = useImageUpload()
   const [selectedStyle, setSelectedStyle] = useState(STYLES[0].id)
   const [selectedProduct, setSelectedProduct] = useState(PRODUCTS[0].id)
 
   const product = PRODUCTS.find((p) => p.id === selectedProduct) || PRODUCTS[0]
+  const style = STYLES.find((s) => s.id === selectedStyle)
 
-  const handleCtaClick = () => {
-    document.getElementById('upload')?.scrollIntoView({ behavior: 'smooth' })
+  const handleCtaClick = useCallback(() => {
+    const el = document.getElementById('upload')
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+
+  if (!splashDone) {
+    return <SplashScreen onFinish={() => setSplashDone(true)} />
   }
 
   return (
     <Layout>
+      <ProgressBar />
+
       <Hero onCtaClick={handleCtaClick} />
 
       <UploadArea onFileSelect={handleFile} preview={preview} loading={loading} error={error} />
 
-      <section style={previewSectionStyle}>
+      <section id="preview-section" style={previewSectionStyle}>
         <div className="container" style={previewContainerStyle}>
           <h2 className="section-title" style={previewTitleStyle}>
-            2. Personnalise ton <span className="gradient-text">héros</span>
+            Ton <span className="gradient-text">héros</span> prend vie
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--gray-500)', textAlign: 'center' }}>
             Choisis ton style et ton support
@@ -62,39 +76,31 @@ export default function App() {
       </section>
 
       <Features />
-      <Steps />
+      <Phases />
+      <Testimonials />
       <Gallery />
+      <FAQ />
       <CTA />
+
+      <StickyCart
+        visible={!!preview}
+        product={product}
+        style={style}
+      />
     </Layout>
   )
 }
 
-const previewSectionStyle = {
-  padding: '100px 0',
-  background: 'var(--black)',
-}
+const previewSectionStyle = { padding: '100px 0', background: 'var(--black)' }
 
-const previewContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '24px',
-}
+const previewContainerStyle = { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }
 
 const previewTitleStyle = {
-  fontFamily: "'Space Grotesk', sans-serif",
-  fontSize: '36px',
-  fontWeight: 700,
-  textAlign: 'center',
-  letterSpacing: '-1px',
-  color: 'var(--white)',
+  fontFamily: "'Space Grotesk', sans-serif", fontSize: '36px', fontWeight: 700,
+  textAlign: 'center', letterSpacing: '-1px', color: 'var(--white)',
 }
 
 const previewGridStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'auto 1fr',
-  gap: '48px',
-  alignItems: 'start',
-  width: '100%',
-  maxWidth: '800px',
+  display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '48px',
+  alignItems: 'start', width: '100%', maxWidth: '800px',
 }

@@ -6,7 +6,14 @@ export default function Footer() {
           <a href="/" style={logoStyle}>
             <span style={{ color: 'var(--orange)' }}>M</span>y<span style={{ color: 'var(--orange)' }}>T</span>oon
           </a>
-          <p style={taglineStyle}>Abidjan Street Wear — Le super héros, c'est toi.</p>
+          <p style={taglineStyle}>
+            <em>"Fièrement conçu à Abidjan, trempé dans l'énergie du macadam."</em>
+          </p>
+          <div style={socialStyle}>
+            <a href="#" style={socialIconStyle} aria-label="WhatsApp">💬</a>
+            <a href="#" style={socialIconStyle} aria-label="Instagram">📸</a>
+            <a href="#" style={socialIconStyle} aria-label="TikTok">🎵</a>
+          </div>
         </div>
 
         <div style={linksStyle}>
@@ -23,8 +30,9 @@ export default function Footer() {
           </div>
           <div style={colStyle}>
             <h4 style={colTitle}>Contact</h4>
-            <a href="#" style={linkStyle}>Instagram</a>
             <a href="#" style={linkStyle}>WhatsApp</a>
+            <a href="#" style={linkStyle}>Instagram</a>
+            <a href="#" style={linkStyle}>TikTok</a>
           </div>
         </div>
       </div>
@@ -37,68 +45,43 @@ export default function Footer() {
 }
 
 const footerStyle = {
-  background: 'var(--black-2)',
-  color: 'var(--gray-500)',
-  padding: '48px 0 0',
-  borderTop: '1px solid rgba(255,255,255,0.06)',
+  background: 'var(--black-2)', color: 'var(--gray-500)',
+  padding: '48px 0 0', borderTop: '1px solid rgba(255,255,255,0.06)',
 }
 
 const innerStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  gap: '48px',
-  flexWrap: 'wrap',
-  paddingBottom: '32px',
+  display: 'flex', justifyContent: 'space-between', gap: '48px',
+  flexWrap: 'wrap', paddingBottom: '32px',
   borderBottom: '1px solid rgba(255,255,255,0.06)',
 }
 
 const logoStyle = {
-  fontFamily: "'Space Grotesk', sans-serif",
-  fontSize: '24px',
-  fontWeight: 700,
-  color: 'var(--white)',
-  letterSpacing: '-1px',
+  fontFamily: "'Space Grotesk', sans-serif", fontSize: '24px',
+  fontWeight: 700, color: 'var(--white)', letterSpacing: '-1px',
 }
 
 const taglineStyle = {
-  marginTop: '8px',
-  fontSize: '13px',
-  maxWidth: '240px',
-  lineHeight: 1.6,
+  marginTop: '12px', fontSize: '13px', maxWidth: '280px',
+  lineHeight: 1.7, color: 'var(--gray-400)',
 }
 
-const linksStyle = {
-  display: 'flex',
-  gap: '48px',
-  flexWrap: 'wrap',
+const socialStyle = { display: 'flex', gap: '12px', marginTop: '16px' }
+
+const socialIconStyle = {
+  fontSize: '20px', opacity: 0.6, transition: 'opacity 0.2s',
 }
 
-const colStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '10px',
-}
+const linksStyle = { display: 'flex', gap: '48px', flexWrap: 'wrap' }
+
+const colStyle = { display: 'flex', flexDirection: 'column', gap: '10px' }
 
 const colTitle = {
-  color: 'var(--gray-400)',
-  fontSize: '12px',
-  fontWeight: 600,
-  textTransform: 'uppercase',
-  letterSpacing: '1.5px',
+  color: 'var(--gray-400)', fontSize: '12px', fontWeight: 600,
+  textTransform: 'uppercase', letterSpacing: '1.5px',
 }
 
-const linkStyle = {
-  fontSize: '14px',
-  color: 'var(--gray-500)',
-  transition: 'color 0.2s',
-}
+const linkStyle = { fontSize: '14px', color: 'var(--gray-500)', transition: 'color 0.2s' }
 
-const bottomStyle = {
-  padding: '24px',
-  textAlign: 'center',
-}
+const bottomStyle = { padding: '24px', textAlign: 'center' }
 
-const copyStyle = {
-  fontSize: '12px',
-  color: 'var(--gray-600)',
-}
+const copyStyle = { fontSize: '12px', color: 'var(--gray-600)' }
