@@ -112,11 +112,11 @@ function bilateralSmooth(pixels, w, h, spatialSigma = 2, rangeSigma = 30) {
           const spatialW = Math.exp(-(kx * kx + ky * ky) / (2 * spatialSigma * spatialSigma))
           const colorDist = (cR - nR) ** 2 + (cG - nG) ** 2 + (cB - nB) ** 2
           const rangeW = Math.exp(-colorDist * rangeNorm)
-          const w = spatialW * rangeW
-          rW += w
-          sumR += nR * w
-          sumG += nG * w
-          sumB += nB * w
+          const weight = spatialW * rangeW
+          rW += weight
+          sumR += nR * weight
+          sumG += nG * weight
+          sumB += nB * weight
         }
       }
 
@@ -189,16 +189,14 @@ function composeWithEdges(canvas, ctx, quantizedData, edgeData, w, h, edgeThresh
   const edgeImageData = edgeCanvas.ctx.getImageData(0, 0, w, h)
   const ed = edgeImageData.data
   for (let i = 0; i < ed.length; i += 4) {
-    if (ed[i] < edgeThreshold) {
-      ed[i] = 0
-      ed[i + 1] = 0
-      ed[i + 2] = 0
+    const edgeVal = ed[i]
+    ed[i] = 0
+    ed[i + 1] = 0
+    ed[i + 2] = 0
+    if (edgeVal < edgeThreshold) {
       ed[i + 3] = 0
     } else {
-      ed[i] = 0
-      ed[i + 1] = 0
-      ed[i + 2] = 0
-      ed[i + 3] = clamp(clamp(ed[i] * 1.5), 0, 200)
+      ed[i + 3] = clamp(edgeVal * 1.5, 0, 200)
     }
   }
   edgeCanvas.ctx.putImageData(edgeImageData, 0, 0)
