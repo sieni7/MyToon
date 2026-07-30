@@ -41,9 +41,9 @@ export default function SplashScreen({ onFinish }) {
       )}
 
       <div style={cornerTLStyle} />
-      <div corner={cornerTRStyle} />
-      <div corner={cornerBLStyle} />
-      <div corner={cornerBRStyle} />
+      <div style={cornerTRStyle} />
+      <div style={cornerBLStyle} />
+      <div style={cornerBRStyle} />
     </div>
   )
 }
@@ -131,4 +131,25 @@ const cornerTLStyle = {
   width: '80px', height: '80px',
   borderTop: '2px solid rgba(255,107,53,0.15)',
   borderLeft: '2px solid rgba(255,107,53,0.15)',
+}
+
+const cornerTRStyle = {
+  position: 'absolute', top: 0, right: 0,
+  width: '80px', height: '80px',
+  borderTop: '2px solid rgba(255,107,53,0.15)',
+  borderRight: '2px solid rgba(255,107,53,0.15)',
+}
+
+const cornerBLStyle = {
+  position: 'absolute', bottom: 0, left: 0,
+  width: '80px', height: '80px',
+  borderBottom: '2px solid rgba(255,107,53,0.15)',
+  borderLeft: '2px solid rgba(255,107,53,0.15)',
+}
+
+const cornerBRStyle = {
+  position: 'absolute', bottom: 0, right: 0,
+  width: '80px', height: '80px',
+  borderBottom: '2px solid rgba(255,107,53,0.15)',
+  borderRight: '2px solid rgba(255,107,53,0.15)',
 }
