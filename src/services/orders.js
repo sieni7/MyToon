@@ -65,6 +65,21 @@ export function listOrders() {
   return readAll()
 }
 
+function normalizePhone(p) {
+  return String(p || '').replace(/\D/g, '').slice(-9)
+}
+
+export function isOrderOwner(order, phone) {
+  if (!order || !phone) return false
+  return normalizePhone(order.client?.telephone) === normalizePhone(phone)
+}
+
+export function listOrdersByPhone(phone) {
+  const normalized = normalizePhone(phone)
+  if (!normalized) return []
+  return readAll().filter((o) => normalizePhone(o.client?.telephone) === normalized)
+}
+
 export function updateStatus(id, status, note = '') {
   const orders = readAll()
   const order = orders.find((o) => o.id === id)
@@ -107,4 +122,13 @@ export function assignPrinter(id, printerId) {
   order.printerId = printerId || null
   writeAll(orders)
   return order
+}
+
+export function createReorder(order) {
+  return createOrder({
+    client: { ...order.client },
+    product: { ...order.product },
+    avatar: { ...order.avatar },
+    photoDataUrl: order.photoDataUrl,
+  })
 }

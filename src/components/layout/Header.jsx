@@ -5,6 +5,7 @@ const navLinks = [
   { label: 'Accueil', to: '/' },
   { label: 'Commander', to: '/commande' },
   { label: 'Suivi', to: '/suivi' },
+  { label: 'Mon espace', to: '/espace' },
 ]
 
 export default function Header() {
@@ -78,9 +79,11 @@ const headerStyle = {
   left: 0,
   right: 0,
   zIndex: 100,
-  background: 'rgba(10,10,10,0.9)',
-  backdropFilter: 'blur(16px)',
-  borderBottom: '1px solid rgba(255,255,255,0.06)',
+  background: 'rgba(15, 15, 15, 0.55)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  borderBottom: '1px solid rgba(212, 175, 55, 0.12)',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
 }
 
 const innerStyle = {

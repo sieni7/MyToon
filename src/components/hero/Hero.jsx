@@ -163,8 +163,12 @@ const statLabelStyle = { fontSize: '13px', color: 'var(--gray-500)' }
 const visualStyle = { display: 'flex', justifyContent: 'center' }
 
 const cardStyle = {
-  background: 'linear-gradient(180deg, var(--black-3) 0%, var(--black-2) 100%)',
-  border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px',
+  background: 'linear-gradient(180deg, rgba(26, 26, 26, 0.6) 0%, rgba(17, 17, 17, 0.6) 100%)',
+  backdropFilter: 'blur(18px)',
+  WebkitBackdropFilter: 'blur(18px)',
+  border: '1px solid rgba(212, 175, 55, 0.2)',
+  boxShadow: '0 0 32px rgba(212, 175, 55, 0.05), 0 20px 60px rgba(0, 0, 0, 0.4)',
+  borderRadius: '24px',
   padding: '32px', width: '320px',
   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
   animation: 'float 4s ease-in-out infinite', position: 'relative',

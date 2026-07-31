@@ -17,7 +17,7 @@ export default function BeforeAfter() {
         </div>
 
         <div className="beforeafter-grid" style={gridStyle}>
-          <div style={cardStyle}>
+          <div className="card-gold glass" style={cardStyle}>
             <div style={imgWrapStyle}>
               <img src={REFERENCE_PHOTO} alt="Photo d'origine" style={imgStyle} />
             </div>
@@ -27,7 +27,7 @@ export default function BeforeAfter() {
 
           <div className="ba-arrow" style={arrowStyle}>➜</div>
 
-          <div style={cardStyle}>
+          <div className="card-gold glass" style={cardStyle}>
             <div style={{ ...imgWrapStyle, borderColor: `${style.color}55` }}>
               <img src={example.image} alt={example.name} style={imgStyle} />
               <span style={{ ...badgeStyle, background: style.color }}>{style.name}</span>
@@ -60,8 +60,8 @@ const gridStyle = {
 }
 
 const cardStyle = {
-  width: '320px', background: 'var(--black-2)', borderRadius: '20px',
-  border: '1px solid rgba(255,255,255,0.06)', padding: '16px',
+  width: '320px', background: 'rgba(17, 17, 17, 0.6)',
+  borderRadius: '20px', border: '1px solid', padding: '16px',
   display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'center',
 }
 

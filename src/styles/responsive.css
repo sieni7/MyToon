@@ -38,8 +38,10 @@
   .gallery-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .section { padding: 60px 0 !important; }
   .upload-dropzone { height: 240px !important; }
-  .cta-card { padding: 40px 24px !important; }
-  .cta-title { font-size: 28px !important; }
+  .cta-card { padding: 28px 24px !important; }
+  .cta-content { flex-direction: column !important; text-align: center !important; }
+  .cta-content > div:first-child { text-align: center !important; align-items: center !important; }
+  .cta-title { font-size: 26px !important; }
   .section-title { font-size: 28px !important; }
 
   #steps .container > div:last-child {
@@ -66,6 +68,7 @@
   .tracking-photo-row { grid-template-columns: 1fr !important; }
   .beforeafter-grid { flex-direction: column; }
   .ba-arrow { transform: rotate(90deg); }
+  .style-lightbox { grid-template-columns: 1fr !important; padding: 24px !important; gap: 20px !important; }
 }
 
 @media (max-width: 480px) {

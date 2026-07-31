@@ -1,24 +1,39 @@
 import { useState } from 'react'
-import { getStatus, getStyle, ORDER_STATUSES, formatPrice } from '../utils/constants'
-import { getOrder, chooseVariation } from '../services/orders'
+import { Link } from 'react-router-dom'
+import { getOrder, isOrderOwner } from '../services/orders'
+import { getSessionPhone, isLoggedIn, login as sessionLogin } from '../services/session'
+import OrderView from '../components/order/OrderView'
 
 export default function TrackingPage() {
   const [query, setQuery] = useState('')
   const [order, setOrder] = useState(null)
   const [notFound, setNotFound] = useState(false)
+  const [unlocked, setUnlocked] = useState(false)
+  const [verifyPhone, setVerifyPhone] = useState('')
+  const [verifyError, setVerifyError] = useState(null)
 
   const handleSearch = (e) => {
     e.preventDefault()
     const found = getOrder(query)
     setOrder(found)
     setNotFound(!found)
+    setUnlocked(false)
+    setVerifyPhone('')
+    setVerifyError(null)
   }
 
-  const currentIndex = ORDER_STATUSES.findIndex((s) => s.id === order?.status)
+  const isOwnerBySession = order && isLoggedIn() && isOrderOwner(order, getSessionPhone())
+  const canViewFull = order && (unlocked || isOwnerBySession)
 
-  const handleChoose = (idx) => {
-    chooseVariation(order.id, idx)
-    setOrder(getOrder(order.id))
+  const handleVerify = (e) => {
+    e.preventDefault()
+    if (isOrderOwner(order, verifyPhone)) {
+      sessionLogin(verifyPhone)
+      setUnlocked(true)
+      setVerifyError(null)
+    } else {
+      setVerifyError('Ce numéro ne correspond pas à la commande. Réessaie avec le numéro utilisé à la commande.')
+    }
   }
 
   return (
@@ -45,88 +60,43 @@ export default function TrackingPage() {
       )}
 
       {order && (
-        <div style={cardStyle}>
-          <div style={orderHeaderStyle}>
-            <div>
-              <h2 style={orderIdStyle}>{order.id}</h2>
-              <p style={orderMetaStyle}>
-                {getStyle(order.avatar.style).name} • {order.product.name} • {formatPrice(order.product.price)}
-              </p>
-            </div>
-            <div style={statusBadgeStyle}>
-              {getStatus(order.status).icon} {getStatus(order.status).label}
-            </div>
-          </div>
+        <>
+          <OrderView order={order} full={canViewFull} />
 
-          <div style={timelineStyle}>
-            {ORDER_STATUSES.map((status, i) => {
-              const done = i < currentIndex || order.status === status.id
-              const active = i === currentIndex
-              return (
-                <div key={status.id} style={timelineItemStyle}>
-                  <div style={timelineLeftStyle}>
-                    <div style={{
-                      ...timelineDotStyle,
-                      background: done ? 'var(--orange)' : active ? 'var(--yellow)' : 'var(--black-3)',
-                    }}>
-                      {done ? (active ? status.icon : '✓') : status.icon}
-                    </div>
-                    {i < ORDER_STATUSES.length - 1 && (
-                      <div style={{ ...timelineLineStyle, background: i < currentIndex ? 'var(--orange)' : 'rgba(255,255,255,0.08)' }} />
-                    )}
-                  </div>
-                  <div style={timelineContentStyle}>
-                    <p style={{ ...timelineLabelStyle, color: done ? 'var(--white)' : 'var(--gray-500)' }}>
-                      {status.label}
-                    </p>
-                    {active && <p style={timelineDescStyle}>{status.desc}</p>}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          {!canViewFull && (
+            <div style={privateHintStyle}>
+              <span style={{ fontSize: '28px' }}>🔒</span>
+              <div style={{ flex: 1, minWidth: '240px' }}>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--white)' }}>Vue limitée</p>
+                <p style={{ fontSize: '13px', color: 'var(--gray-500)', lineHeight: 1.6 }}>
+                  Ta photo, tes 3 déclinaisons et ton adresse restent privées.
+                  {isOwnerBySession
+                    ? 'Connecte-toi à ton espace pour tout voir.'
+                    : ' Tu as passé cette commande ? Confirme ton numéro pour tout déverrouiller — aucun code à recevoir.'}
+                </p>
 
-          {(order.status === 'propositions_pretes' || order.status === 'validation_attente' || order.status === 'validee') && (
-            <div style={variationsSectionStyle}>
-              <h3 style={variationsTitleStyle}>Tes 3 déclinaisons — choisis ta préférée</h3>
-              <div className="variations-grid" style={variationsGridStyle}>
-                {order.variations.map((variation, i) => {
-                  const isChosen = order.chosenVariation === variation
-                  return (
-                    <div key={i} style={{ ...variationCardStyle, borderColor: isChosen ? 'var(--yellow)' : 'rgba(255,255,255,0.08)' }}>
-                      <img src={variation} alt={`Déclinaison ${i + 1}`} style={variationImgStyle} />
-                      <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--gray-400)' }}>Déclinaison {i + 1}</p>
-                      {isChosen ? (
-                        <span style={chosenBadgeStyle}>✓ Choisie</span>
-                      ) : (
-                        order.status !== 'validee' && (
-                          <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px', width: '100%' }} onClick={() => handleChoose(i)}>
-                            Choisir celle-ci
-                          </button>
-                        )
-                      )}
-                    </div>
-                  )
-                })}
+                {!isOwnerBySession && (
+                  <form onSubmit={handleVerify} style={verifyFormStyle}>
+                    <input
+                      style={verifyInputStyle}
+                      value={verifyPhone}
+                      onChange={(e) => setVerifyPhone(e.target.value)}
+                      placeholder="Ton numéro utilisé à la commande"
+                      inputMode="tel"
+                    />
+                    <button className="btn btn-primary" type="submit" style={{ padding: '12px 20px', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                      Déverrouiller
+                    </button>
+                  </form>
+                )}
+                {verifyError && <p style={verifyErrorStyle}>{verifyError}</p>}
               </div>
+              <Link to="/espace" className="btn btn-secondary" style={{ padding: '12px 20px', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                Mon espace
+              </Link>
             </div>
           )}
-
-          <div className="tracking-photo-row" style={photoRowStyle}>
-            <div style={photoBoxStyle}>
-              <p style={photoLabelStyle}>📷 Ta photo</p>
-              {order.photoDataUrl && <img src={order.photoDataUrl} alt="Photo du client" style={photoImgStyle} />}
-            </div>
-            <div style={infoBoxStyle}>
-              <p style={photoLabelStyle}>👤 Livraison</p>
-              <p style={infoTextStyle}><strong>{order.client.nom}</strong></p>
-              <p style={infoTextStyle}>{order.client.telephone}</p>
-              <p style={infoTextStyle}>
-                {[order.client.quartier, order.client.ville, order.client.adresse].filter(Boolean).join(', ')}
-              </p>
-            </div>
-          </div>
-        </div>
+        </>
       )}
     </div>
   )
@@ -153,70 +123,18 @@ const inputStyle = {
 
 const notFoundStyle = { textAlign: 'center', color: '#ef4444', fontSize: '14px' }
 
-const cardStyle = {
-  background: 'var(--black-2)', borderRadius: '24px', padding: '32px',
-  border: '1px solid rgba(255,255,255,0.08)',
-  display: 'flex', flexDirection: 'column', gap: '28px',
+const privateHintStyle = {
+  marginTop: '20px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap',
+  background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)',
+  borderRadius: '16px', padding: '20px',
 }
 
-const orderHeaderStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }
+const verifyFormStyle = { display: 'flex', gap: '10px', marginTop: '14px', flexWrap: 'wrap' }
 
-const orderIdStyle = { fontFamily: "'Space Grotesk', sans-serif", fontSize: '26px', fontWeight: 700, color: 'var(--white)' }
-
-const orderMetaStyle = { fontSize: '13px', color: 'var(--gray-500)', marginTop: '4px' }
-
-const statusBadgeStyle = {
-  background: 'rgba(255,107,53,0.12)', color: 'var(--orange)',
-  padding: '8px 16px', borderRadius: '100px', fontSize: '13px', fontWeight: 700,
+const verifyInputStyle = {
+  flex: 1, minWidth: '200px', padding: '12px 14px', borderRadius: '12px',
+  border: '1px solid rgba(255,255,255,0.1)', background: 'var(--black-3)',
+  color: 'var(--white)', fontSize: '14px', outline: 'none',
 }
 
-const timelineStyle = { display: 'flex', flexDirection: 'column' }
-
-const timelineItemStyle = { display: 'flex', gap: '16px' }
-
-const timelineLeftStyle = { display: 'flex', flexDirection: 'column', alignItems: 'center' }
-
-const timelineDotStyle = {
-  width: '36px', height: '36px', borderRadius: '50%',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  fontSize: '16px', flexShrink: 0,
-}
-
-const timelineLineStyle = { width: '2px', flex: 1, minHeight: '28px' }
-
-const timelineContentStyle = { paddingBottom: '20px' }
-
-const timelineLabelStyle = { fontSize: '15px', fontWeight: 600, paddingTop: '6px' }
-
-const timelineDescStyle = { fontSize: '12px', color: 'var(--gray-500)', marginTop: '4px', maxWidth: '420px', lineHeight: 1.6 }
-
-const variationsSectionStyle = { borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }
-
-const variationsTitleStyle = { fontSize: '18px', fontWeight: 700, color: 'var(--white)' }
-
-const variationsGridStyle = { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }
-
-const variationCardStyle = {
-  border: '1px solid', borderRadius: '16px', padding: '10px',
-  display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center',
-  background: 'var(--black-3)',
-}
-
-const variationImgStyle = { width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '10px' }
-
-const chosenBadgeStyle = {
-  background: 'rgba(251,191,36,0.15)', color: 'var(--yellow)',
-  padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, width: '100%', textAlign: 'center',
-}
-
-const photoRowStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '24px' }
-
-const photoBoxStyle = { display: 'flex', flexDirection: 'column', gap: '10px' }
-
-const photoLabelStyle = { fontSize: '13px', fontWeight: 700, color: 'var(--gray-400)' }
-
-const photoImgStyle = { width: '120px', height: '120px', objectFit: 'cover', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.1)' }
-
-const infoBoxStyle = { display: 'flex', flexDirection: 'column', gap: '4px' }
-
-const infoTextStyle = { fontSize: '13px', color: 'var(--gray-500)', lineHeight: 1.5 }
+const verifyErrorStyle = { marginTop: '8px', color: '#ef4444', fontSize: '12px' }

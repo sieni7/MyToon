@@ -1,9 +1,49 @@
 export const STYLES = [
-  { id: 'manga', name: 'Manga', emoji: '📖', color: '#fbbf24', desc: 'Trait noir, yeux lumineux, ambiance shonen', bg: 'linear-gradient(135deg, #fbbf24, #f59e0b)' },
-  { id: 'comics', name: 'Comics', emoji: '💥', color: '#ff6b35', desc: 'Pop, couleurs vives, halftones', bg: 'linear-gradient(135deg, #ff6b35, #ef4444)' },
-  { id: 'cartoon', name: 'Cartoon', emoji: '🎨', color: '#ec4899', desc: 'Déformé, expressif, fun', bg: 'linear-gradient(135deg, #ec4899, #d946ef)' },
-  { id: 'pop-art', name: 'Pop Art', emoji: '🎭', color: '#06b6d4', desc: 'Warhol style, couleurs contrastées', bg: 'linear-gradient(135deg, #06b6d4, #3b82f6)' },
-  { id: 'sketch', name: 'Sketch', emoji: '✏️', color: '#7c3aed', desc: 'Trait crayonné, effet dessin', bg: 'linear-gradient(135deg, #7c3aed, #a78bfa)' },
+  {
+    id: 'manga', name: 'Manga', emoji: '📖', color: '#fbbf24',
+    desc: 'Trait noir, yeux lumineux, ambiance shonen',
+    bg: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+    details: 'Style anime japonais : grands yeux expressifs, lignes de contour nettes et ombrage cel shading. L\'ambiance shonen pour des poses dynamiques et énergiques.',
+    particularites: ['Grands yeux lumineux', 'Contours nets', 'Ombrage cel shading', 'Cheveux détaillés'],
+    origine: 'Héritage du manga japonais (inspiration shonen)',
+    date: 'Créé en juillet 2026',
+  },
+  {
+    id: 'comics', name: 'Comics', emoji: '💥', color: '#ff6b35',
+    desc: 'Pop, couleurs vives, halftones',
+    bg: 'linear-gradient(135deg, #ff6b35, #ef4444)',
+    details: 'Style comic book américain : lignes d\'encre épaisses, ombrage halftone et éclairage dramatique. Le look des super-héros classiques.',
+    particularites: ['Encrage épais', 'Ombrage halftone', 'Couleurs vibrantes', 'Contrastes forts'],
+    origine: 'Comics américains (Marvel / DC)',
+    date: 'Créé en juillet 2026',
+  },
+  {
+    id: 'cartoon', name: 'Cartoon', emoji: '🎨', color: '#ec4899',
+    desc: 'Déformé, expressif, fun',
+    bg: 'linear-gradient(135deg, #ec4899, #d946ef)',
+    details: 'Style cartoon : proportions exagérées, expressions fun et énergie débordante. Le rendu dessin animé classique.',
+    particularites: ['Expressions exagérées', 'Proportions stylisées', 'Couleurs vives', 'Vibe dessin animé'],
+    origine: 'Cartoons d\'animation occidentaux',
+    date: 'Bientôt disponible',
+  },
+  {
+    id: 'pop-art', name: 'Pop Art', emoji: '🎭', color: '#06b6d4',
+    desc: 'Warhol style, couleurs contrastées',
+    bg: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+    details: 'Style Pop Art rétro : couleurs flashys et saturées, contours noirs prononcés, arrière-plan graphique. L\'esprit d\'Andy Warhol et Roy Lichtenstein.',
+    particularites: ['Couleurs saturées', 'Contours noirs', 'Fond géométrique', 'Vibe galerie d\'art'],
+    origine: 'Mouvement Pop Art (Warhol, Lichtenstein)',
+    date: 'Créé en juillet 2026',
+  },
+  {
+    id: 'sketch', name: 'Sketch', emoji: '✏️', color: '#7c3aed',
+    desc: 'Trait crayonné, effet dessin',
+    bg: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+    details: 'Style sketch : trait crayonné, effet dessin à la main. Le rendu d\'une illustration originale.',
+    particularites: ['Trait crayonné', 'Effet dessiné', 'Ambiance croquis', 'Style illustration'],
+    origine: 'Illustration traditionnelle / BD franco-belge',
+    date: 'Bientôt disponible',
+  },
 ]
 
 export const AVATARS = [
@@ -24,6 +64,12 @@ export const REFERENCE_PHOTO = '/reference-originale.jpg'
 export const ACTIVE_AVATARS = AVATARS.filter((a) => a.enabled)
 
 export const ACTIVE_STYLES = STYLES.filter((s) => ACTIVE_AVATARS.some((a) => a.style === s.id))
+
+export const GALLERY_STYLES = STYLES.map((s) => ({
+  ...s,
+  enabled: ACTIVE_AVATARS.some((a) => a.style === s.id),
+  avatar: ACTIVE_AVATARS.find((a) => a.style === s.id) || null,
+})).sort((a, b) => Number(b.enabled) - Number(a.enabled))
 
 export const PRODUCTS = [
   { id: 'tee', name: 'T-shirt coton local', type: 'tee', price: 10000, unit: 'FCFA', desc: 'Coton 100% local, coupe classique. Ton toon imprimé devant.' },

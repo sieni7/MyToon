@@ -23,7 +23,7 @@ export default function Products() {
 
         <div className="products-grid" style={gridStyle}>
           {PRODUCTS.map((product) => (
-            <div key={product.id} style={cardStyle}>
+            <div key={product.id} className="card-gold glass" style={cardStyle}>
               <div style={visualStyle}>
                 <span style={{ fontSize: '64px' }}>{productVisuals[product.type]}</span>
               </div>
@@ -73,8 +73,9 @@ const gridStyle = {
 }
 
 const cardStyle = {
-  background: 'var(--black-2)', borderRadius: '24px',
-  border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden',
+  background: 'rgba(17, 17, 17, 0.6)',
+  borderRadius: '24px', border: '1px solid',
+  overflow: 'hidden',
   display: 'flex', flexDirection: 'column',
 }
 

@@ -24,6 +24,7 @@ export default function Footer() {
             <Link to="/" style={linkStyle}>Accueil</Link>
             <Link to="/commande" style={linkStyle}>Commander</Link>
             <Link to="/suivi" style={linkStyle}>Suivi</Link>
+            <Link to="/espace" style={linkStyle}>Mon espace</Link>
             <Link to="/admin" style={linkStyle}>Dashboard</Link>
           </div>
           <div style={colStyle}>

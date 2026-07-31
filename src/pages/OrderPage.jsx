@@ -6,6 +6,7 @@ import UploadArea from '../components/upload/UploadArea'
 import { useImageUpload } from '../hooks/useImageUpload'
 import { compressImage } from '../utils/image'
 import { createOrder } from '../services/orders'
+import { login as sessionLogin } from '../services/session'
 
 const STEP_LABELS = ['Avatar', 'Support', 'Photo & infos']
 
@@ -34,6 +35,7 @@ export default function OrderPage() {
         avatar: { id: avatar.id, style: avatar.style, name: avatar.name },
         photoDataUrl,
       })
+      sessionLogin(form.telephone)
       setOrder(created)
       setStep(4)
     } catch (e) {
@@ -50,7 +52,7 @@ export default function OrderPage() {
           <div style={successIconStyle}>⚡</div>
           <h1 style={successTitleStyle}>Commande <span className="gradient-text">{order.id}</span> reçue !</h1>
           <p style={successTextStyle}>
-            Nos artistes préparent <strong>3 déclinaisons</strong> de ton toon style <strong>{getStyle(order.avatar.style).name}</strong>{' '}
+            Nos artistes créent <strong>3 déclinaisons</strong> de ton toon style <strong>{getStyle(order.avatar.style).name}</strong>{' '}
             sur ton <strong>{order.product.name}</strong> ({formatPrice(order.product.price)}).
           </p>
           <div style={promiseStyle}>
@@ -60,12 +62,23 @@ export default function OrderPage() {
               <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Tu recevras un SMS/WhatsApp dès que tes 3 propositions sont prêtes.</p>
             </div>
           </div>
+          <div style={stepsCardStyle}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--gold)', textAlign: 'left', width: '100%' }}>Ce qui va se passer</p>
+            <div style={stepLineStyle}><span style={stepNumStyle}>1</span> Nous créons tes 3 déclinaisons (≈ 1h)</div>
+            <div style={stepLineStyle}><span style={stepNumStyle}>2</span> Reviens ici avec ton numéro <strong>{order.id}</strong> pour les voir et choisir ta préférée</div>
+            <div style={stepLineStyle}><span style={stepNumStyle}>3</span> On imprime et on livre en 24-48h</div>
+          </div>
           <p style={hintStyle}>
-            Note bien ton numéro <strong>{order.id}</strong> — tu peux suivre l'évolution à tout moment.
+            Ta commande est déjà liée à ton numéro <strong>{form.telephone}</strong> — tu n'as rien à installer, ton téléphone est ton espace.
           </p>
-          <Link to="/suivi" className="btn btn-primary" style={{ padding: '16px 40px', fontSize: '15px' }}>
-            Suivre ma commande
-          </Link>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Link to="/suivi" className="btn btn-primary" style={{ padding: '16px 40px', fontSize: '15px' }}>
+              Suivre ma commande
+            </Link>
+            <Link to="/espace/commandes" className="btn btn-secondary" style={{ padding: '16px 28px', fontSize: '15px' }}>
+              Mes commandes
+            </Link>
+          </div>
         </div>
       </div>
     )
@@ -189,6 +202,15 @@ export default function OrderPage() {
       )}
 
       <div style={footerStyle}>
+        <div style={{ flex: 1 }}>
+          {!canGoNext && step < 3 && (
+            <p style={{ fontSize: '13px', color: 'var(--gray-500)', fontWeight: 600 }}>
+              {step === 1
+                ? '👈 Sélectionne un avatar d\'exemple pour continuer'
+                : '📷 Ajoute ta photo et remplis ton nom + téléphone pour continuer'}
+            </p>
+          )}
+        </div>
         {step > 1 && (
           <button className="btn btn-secondary" onClick={() => setStep(step - 1)}>Retour</button>
         )}
@@ -300,3 +322,17 @@ const promiseStyle = {
 }
 
 const hintStyle = { fontSize: '13px', color: 'var(--gray-500)' }
+
+const stepsCardStyle = {
+  display: 'flex', flexDirection: 'column', gap: '10px',
+  background: 'var(--black-3)', border: '1px solid rgba(212,175,55,0.2)',
+  borderRadius: '16px', padding: '18px 20px', width: '100%',
+}
+
+const stepLineStyle = { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--gray-400)', textAlign: 'left', lineHeight: 1.5 }
+
+const stepNumStyle = {
+  width: '24px', height: '24px', borderRadius: '50%', flexShrink: 0,
+  background: 'rgba(212,175,55,0.15)', color: 'var(--gold)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700,
+}

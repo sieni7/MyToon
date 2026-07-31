@@ -1,28 +1,9 @@
 import { useState } from 'react'
 import { FAQ as FAQ_DATA } from '../../utils/constants'
 
-function FAQItem({ item }) {
-  const [open, setOpen] = useState(false)
-
-  return (
-    <div style={itemStyle}>
-      <button
-        onClick={() => setOpen(!open)}
-        style={questionStyle}
-      >
-        <span>{item.q}</span>
-        <span style={{ ...chevronStyle, transform: open ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
-      </button>
-      {open && (
-        <div style={answerStyle}>
-          {item.a}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function FAQ() {
+  const [openIndex, setOpenIndex] = useState(null)
+
   return (
     <section id="faq" style={sectionStyle}>
       <div className="container" style={containerStyle}>
@@ -33,9 +14,26 @@ export default function FAQ() {
         </div>
 
         <div style={listStyle}>
-          {FAQ_DATA.map((item, i) => (
-            <FAQItem key={i} item={item} />
-          ))}
+          {FAQ_DATA.map((item, i) => {
+            const open = openIndex === i
+            return (
+              <div key={i} style={{ ...itemStyle, borderColor: open ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.06)', boxShadow: open ? '0 0 24px rgba(212,175,55,0.08)' : 'none' }}>
+                <button
+                  onClick={() => setOpenIndex(open ? null : i)}
+                  style={questionStyle}
+                  aria-expanded={open}
+                >
+                  <span>{item.q}</span>
+                  <span style={{ ...chevronStyle, transform: open ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
+                </button>
+                {open && (
+                  <div style={answerStyle}>
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

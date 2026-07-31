@@ -6,6 +6,9 @@ import HomePage from './pages/HomePage'
 import OrderPage from './pages/OrderPage'
 import TrackingPage from './pages/TrackingPage'
 import AdminPage from './pages/AdminPage'
+import EspacePage from './pages/EspacePage'
+import MesCommandesPage from './pages/MesCommandesPage'
+import CommandeDetailPage from './pages/CommandeDetailPage'
 import './styles/globals.css'
 import './styles/responsive.css'
 
@@ -32,6 +35,9 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/commande" element={<OrderPage />} />
           <Route path="/suivi" element={<TrackingPage />} />
+          <Route path="/espace" element={<EspacePage />} />
+          <Route path="/espace/commandes" element={<MesCommandesPage />} />
+          <Route path="/espace/commande/:id" element={<CommandeDetailPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
