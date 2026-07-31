@@ -68,6 +68,11 @@
   .tracking-photo-row { grid-template-columns: 1fr !important; }
   .beforeafter-grid { flex-direction: column; }
   .ba-arrow { transform: rotate(90deg); }
+  .footer-inner { flex-direction: column !important; align-items: center !important; text-align: center !important; gap: 36px !important; }
+  .footer-links { justify-content: center !important; gap: 40px !important; }
+  .footer-promise { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+  .footer-pay { flex-direction: column !important; }
+  .footer-bottom { flex-direction: column !important; }
   .style-lightbox { grid-template-columns: 1fr !important; padding: 24px !important; gap: 20px !important; }
 }
 
