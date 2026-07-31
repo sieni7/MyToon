@@ -85,7 +85,8 @@ try {
   await admin.getByText(/✨ 3 propositions prêtes/).first().waitFor({ timeout: 15000 })
   check('admin dépose 3 déclinaisons → propositions prêtes', true)
   await admin.locator('img[alt^="Déclinaison"]').first().waitFor({ timeout: 10000 })
-  check('déclinaisons visibles dans la carte', (await admin.locator('img[alt^="Déclinaison"]').count()) >= 3)
+  await admin.waitForFunction(() => document.querySelectorAll('img[alt^="Déclinaison"]').length >= 3, null, { timeout: 10000 })
+  check('déclinaisons visibles dans la carte', true)
 } catch (e) {
   check(`admin flow — ${e.message}`, false)
 }

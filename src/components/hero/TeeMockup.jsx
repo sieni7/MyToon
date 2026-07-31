@@ -54,4 +54,4 @@ export default function TeeMockup({ photo, avatar, showPhoto, color = '#ff6b35' 
   )
 }
 
-const wrapStyle = { width: '100%', maxWidth: '360px', filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.45))' }
+const wrapStyle = { width: '100%', maxWidth: '360px', filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.45))', animation: 'float 4s ease-in-out infinite' }

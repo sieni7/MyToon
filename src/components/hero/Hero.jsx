@@ -212,7 +212,7 @@ const cardStyle = {
   borderRadius: '24px',
   padding: '24px 28px', width: '360px',
   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
-  animation: 'float 4s ease-in-out infinite', position: 'relative',
+  position: 'relative',
 }
 
 const cardHeaderStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }
