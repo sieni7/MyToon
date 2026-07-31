@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-export default function UploadArea({ onFileSelect, preview, loading, error }) {
+export default function UploadArea({ onFileSelect, preview, loading, error, compact = false }) {
   const inputRef = useRef(null)
   const [dragOver, setDragOver] = useState(false)
 
@@ -17,14 +17,18 @@ export default function UploadArea({ onFileSelect, preview, loading, error }) {
   }
 
   return (
-    <section id="upload" style={sectionStyle}>
+    <section id="upload" style={{ ...sectionStyle, padding: compact ? '0' : '100px 0' }}>
       <div className="container" style={containerStyle}>
-        <h2 className="section-title" style={titleStyle}>
-          1. Envoie ta <span className="gradient-text">photo</span>
-        </h2>
-        <p style={subStyle}>
-          Selfie, portrait ou photo de groupe. Notre IA va te transformer en héros.
-        </p>
+        {!compact && (
+          <>
+            <h2 className="section-title" style={titleStyle}>
+              Ta <span className="gradient-text">photo</span>
+            </h2>
+            <p style={subStyle}>
+              Selfie ou portrait de face. Nos artistes s'en occupent.
+            </p>
+          </>
+        )}
 
         <div
           className="upload-dropzone"

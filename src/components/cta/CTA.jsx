@@ -1,4 +1,8 @@
+import { useNavigate } from 'react-router-dom'
+
 export default function CTA() {
+  const navigate = useNavigate()
+
   return (
     <section id="cta" style={sectionStyle}>
       <div className="container" style={containerStyle}>
@@ -17,15 +21,15 @@ export default function CTA() {
           </h2>
 
           <p style={subStyle}>
-            500+ héros créés. Rejoins-les.
+            Ton toon en 1 heure, ton tee-shirt en 48h.
           </p>
 
           <button
             className="btn btn-primary"
             style={{ fontSize: '16px', padding: '18px 44px', background: 'var(--black)', color: 'var(--white)' }}
-            onClick={() => document.getElementById('upload')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/commande')}
           >
-            Créer mon héros
+            Commander mon toon
           </button>
         </div>
       </div>

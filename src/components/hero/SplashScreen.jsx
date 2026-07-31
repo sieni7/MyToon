@@ -35,7 +35,7 @@ export default function SplashScreen({ onFinish }) {
             )}
           </h1>
           {phase === 'done' && (
-            <p style={fadeInSubStyle}>Une photo. Une IA. Ton alter ego. Ton style.</p>
+            <p style={fadeInSubStyle}>Une photo. 3 déclinaisons en 1h. Sur ton t-shirt en 48h.</p>
           )}
         </div>
       )}

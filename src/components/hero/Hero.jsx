@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Particles from './Particles'
-import { CAROUSEL_AVATARS, STYLES } from '../../utils/constants'
+import { ACTIVE_AVATARS, getStyle } from '../../utils/constants'
+import AvatarImage from '../common/AvatarImage'
 
 export default function Hero({ onCtaClick }) {
   const [avatarIndex, setAvatarIndex] = useState(0)
@@ -8,7 +9,7 @@ export default function Hero({ onCtaClick }) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setAvatarIndex((i) => (i + 1) % CAROUSEL_AVATARS.length)
+      setAvatarIndex((i) => (i + 1) % ACTIVE_AVATARS.length)
     }, 3000)
     return () => clearInterval(interval)
   }, [])
@@ -20,8 +21,8 @@ export default function Hero({ onCtaClick }) {
     return () => clearInterval(interval)
   }, [])
 
-  const avatar = CAROUSEL_AVATARS[avatarIndex]
-  const styleTheme = STYLES.find((s) => s.name.toLowerCase() === avatar.style.toLowerCase()) || STYLES[0]
+  const avatar = ACTIVE_AVATARS[avatarIndex]
+  const styleTheme = getStyle(avatar.style)
 
   return (
     <section id="hero" style={sectionStyle}>
@@ -33,7 +34,7 @@ export default function Hero({ onCtaClick }) {
           <div style={contentStyle}>
             <div style={tagStyle}>
               <span style={dotStyle} />
-              Abidjan Street Wear
+              Ton toon en 1 heure ⚡
             </div>
 
             <h1 className="hero-title" style={titleStyle}>
@@ -42,7 +43,7 @@ export default function Hero({ onCtaClick }) {
             </h1>
 
             <p className="hero-sub" style={subStyle}>
-              Une photo. Une IA. Ton alter ego. Ton style.
+              Une photo. 3 déclinaisons de toi en 1 heure. Sur ton t-shirt en 48h.
             </p>
 
             <div className="hero-cta" style={ctaGroupStyle}>
@@ -63,11 +64,11 @@ export default function Hero({ onCtaClick }) {
                 <span style={statLabelStyle}>Héros créés</span>
               </div>
               <div style={statStyle}>
-                <span style={statNumStyle}>Abidjan</span>
-                <span style={statLabelStyle}>Notre ville</span>
+                <span style={statNumStyle}>1h</span>
+                <span style={statLabelStyle}>Pour ton toon</span>
               </div>
               <div style={statStyle}>
-                <span style={statNumStyle}>7j</span>
+                <span style={statNumStyle}>48h</span>
                 <span style={statLabelStyle}>Livraison</span>
               </div>
             </div>
@@ -83,16 +84,14 @@ export default function Hero({ onCtaClick }) {
               </div>
 
               <div style={{ ...avatarRingStyle, background: `linear-gradient(135deg, ${styleTheme.color}, ${styleTheme.color}88)` }}>
-                <div style={avatarStyle}>
-                  <span style={{ fontSize: '64px', animation: 'pop 0.5s ease-out' }}>{avatar.emoji}</span>
-                </div>
+                <AvatarImage avatar={avatar} size="100%" emojiSize={64} style={{ borderRadius: '50%', animation: 'pop 0.5s ease-out' }} />
               </div>
 
               <div style={heroNameStyle}>{avatar.name}</div>
-              <div style={heroIdStyle}>Style {avatar.style}</div>
+              <div style={heroIdStyle}>Style {styleTheme.name}</div>
 
               <div style={styleDotsStyle}>
-                {CAROUSEL_AVATARS.map((_, i) => (
+                {ACTIVE_AVATARS.map((_, i) => (
                   <div
                     key={i}
                     style={{
@@ -177,12 +176,6 @@ const avatarRingStyle = {
   width: '150px', height: '150px', borderRadius: '50%',
   padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center',
   transition: 'background 0.5s ease',
-}
-
-const avatarStyle = {
-  width: '100%', height: '100%', borderRadius: '50%',
-  background: 'linear-gradient(135deg, var(--black-4), var(--black-3))',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
 }
 
 const heroNameStyle = { fontFamily: "'Space Grotesk', sans-serif", fontSize: '18px', fontWeight: 700, letterSpacing: '2px', color: 'var(--white)' }

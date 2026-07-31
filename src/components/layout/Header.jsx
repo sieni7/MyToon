@@ -1,30 +1,43 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 
 const navLinks = [
-  { label: 'Créer', href: '#hero' },
-  { label: 'Styles', href: '#styles' },
-  { label: 'Étapes', href: '#steps' },
+  { label: 'Accueil', to: '/' },
+  { label: 'Commander', to: '/commande' },
+  { label: 'Suivi', to: '/suivi' },
 ]
 
 export default function Header() {
   const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
 
   const handleCta = () => {
-    document.getElementById('upload')?.scrollIntoView({ behavior: 'smooth' })
+    setOpen(false)
+    navigate('/commande')
   }
 
   return (
     <header style={headerStyle}>
       <div className="container" style={innerStyle}>
-        <a href="/" style={logoStyle}>
+        <Link to="/" style={logoStyle}>
           <span style={logoAccent}>M</span>y<span style={logoAccent}>T</span>oon
-        </a>
+        </Link>
 
         <nav className="nav-desktop" style={navStyle}>
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href} style={navLinkStyle}>
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={link.to === '/'}
+              style={({ isActive }) => ({ ...navLinkStyle, color: isActive ? 'var(--orange)' : 'var(--gray-400)' })}
+            >
               {link.label}
-            </a>
+            </NavLink>
           ))}
           <button className="btn btn-primary" style={{ padding: '10px 24px', fontSize: '13px' }} onClick={handleCta}>
             Créer mon héros
@@ -41,11 +54,16 @@ export default function Header() {
       {open && (
         <div style={mobileMenuStyle}>
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href} style={mobileLinkStyle} onClick={() => setOpen(false)}>
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={link.to === '/'}
+              style={({ isActive }) => ({ ...mobileLinkStyle, color: isActive ? 'var(--orange)' : 'var(--gray-400)' })}
+            >
               {link.label}
-            </a>
+            </NavLink>
           ))}
-          <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => { setOpen(false); handleCta() }}>
+          <button className="btn btn-primary" style={{ width: '100%' }} onClick={handleCta}>
             Créer mon héros
           </button>
         </div>
@@ -91,7 +109,6 @@ const navStyle = {
 const navLinkStyle = {
   fontSize: '14px',
   fontWeight: 500,
-  color: 'var(--gray-400)',
   transition: 'color 0.2s',
 }
 
@@ -124,6 +141,5 @@ const mobileMenuStyle = {
 const mobileLinkStyle = {
   fontSize: '16px',
   fontWeight: 500,
-  color: 'var(--gray-400)',
   padding: '8px 0',
 }

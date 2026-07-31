@@ -6,8 +6,8 @@ const values = [
   },
   {
     icon: '⚡',
-    title: 'IA créative',
-    desc: 'L\'intelligence artificielle devient un outil artistique au service de ton image.',
+    title: '1 heure chrono',
+    desc: 'Nos artistes te préparent 3 déclinaisons de ton toon en une heure. Tu choisis.',
   },
   {
     icon: '🔥',

@@ -1,11 +1,13 @@
+import { Link } from 'react-router-dom'
+
 export default function Footer() {
   return (
     <footer style={footerStyle}>
       <div className="container" style={innerStyle}>
         <div>
-          <a href="/" style={logoStyle}>
+          <Link to="/" style={logoStyle}>
             <span style={{ color: 'var(--orange)' }}>M</span>y<span style={{ color: 'var(--orange)' }}>T</span>oon
-          </a>
+          </Link>
           <p style={taglineStyle}>
             <em>"Fièrement conçu à Abidjan, trempé dans l'énergie du macadam."</em>
           </p>
@@ -18,10 +20,11 @@ export default function Footer() {
 
         <div style={linksStyle}>
           <div style={colStyle}>
-            <h4 style={colTitle}>Héros</h4>
-            <a href="#hero" style={linkStyle}>Créer</a>
-            <a href="#styles" style={linkStyle}>Styles</a>
-            <a href="#steps" style={linkStyle}>Étapes</a>
+            <h4 style={colTitle}>MyToon</h4>
+            <Link to="/" style={linkStyle}>Accueil</Link>
+            <Link to="/commande" style={linkStyle}>Commander</Link>
+            <Link to="/suivi" style={linkStyle}>Suivi</Link>
+            <Link to="/admin" style={linkStyle}>Dashboard</Link>
           </div>
           <div style={colStyle}>
             <h4 style={colTitle}>Légal</h4>

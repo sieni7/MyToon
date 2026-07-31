@@ -1,4 +1,5 @@
-import { STYLES } from '../../utils/constants.js'
+import { ACTIVE_AVATARS, getStyle } from '../../utils/constants'
+import AvatarImage from '../common/AvatarImage'
 
 export default function Gallery() {
   return (
@@ -9,97 +10,56 @@ export default function Gallery() {
             Choisis ton <span className="gradient-text">univers</span>
           </h2>
           <p style={subStyle}>
-            Manga, Comics, Cartoon, Pop Art ou Sketch — quel héros veux-tu devenir ?
+            {ACTIVE_STYLES.map((s) => s.name).join(', ')} — chaque style sera décliné en 3 versions de ton propre visage.
           </p>
         </div>
 
         <div className="gallery-grid" style={gridStyle}>
-          {STYLES.map((style, i) => (
-            <div key={i} style={cardStyle}>
-              <div style={{
-                ...previewStyle,
-                background: `linear-gradient(135deg, ${style.color}22, transparent)`,
-                borderColor: `${style.color}33`,
-              }}>
-                <span style={emojiStyle}>{style.emoji}</span>
+          {ACTIVE_AVATARS.map((avatar) => {
+            const style = getStyle(avatar.style)
+            return (
+              <div key={avatar.id} style={cardStyle}>
+                <AvatarImage avatar={avatar} size="100%" emojiSize={56} />
+                <div style={infoStyle}>
+                  <p style={{ fontWeight: 700, fontSize: '16px', color: 'var(--white)' }}>{style.name}</p>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: style.color, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    {avatar.name}
+                  </span>
+                </div>
               </div>
-              <div style={infoStyle}>
-                <p style={{ fontWeight: 700, fontSize: '16px', color: 'var(--white)' }}>{style.name}</p>
-                <p style={{ fontSize: '13px', color: 'var(--gray-500)', lineHeight: 1.5 }}>{style.desc}</p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
   )
 }
 
-const sectionStyle = {
-  padding: '100px 0',
-  background: 'var(--black-2)',
-}
+const sectionStyle = { padding: '100px 0', background: 'var(--black-2)' }
 
-const containerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '48px',
-}
+const containerStyle = { display: 'flex', flexDirection: 'column', gap: '48px' }
 
-const headerStyle = {
-  textAlign: 'center',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '12px',
-}
+const headerStyle = { textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '12px' }
 
 const titleStyle = {
-  fontFamily: "'Space Grotesk', sans-serif",
-  fontSize: '40px',
-  fontWeight: 700,
-  letterSpacing: '-1px',
-  color: 'var(--white)',
+  fontFamily: "'Space Grotesk', sans-serif", fontSize: '40px', fontWeight: 700,
+  letterSpacing: '-1px', color: 'var(--white)',
 }
 
-const subStyle = {
-  fontSize: '16px',
-  color: 'var(--gray-500)',
-  maxWidth: '500px',
-  margin: '0 auto',
-}
+const subStyle = { fontSize: '16px', color: 'var(--gray-500)', maxWidth: '560px', margin: '0 auto' }
 
 const gridStyle = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
   gap: '20px',
 }
 
 const cardStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '16px',
-  background: 'var(--black-3)',
-  borderRadius: '20px',
-  border: '1px solid rgba(255,255,255,0.06)',
-  overflow: 'hidden',
-}
-
-const previewStyle = {
-  width: '100%',
-  aspectRatio: '1',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderBottom: '1px solid rgba(255,255,255,0.06)',
-}
-
-const emojiStyle = {
-  fontSize: '56px',
+  display: 'flex', flexDirection: 'column', gap: '14px',
+  background: 'var(--black-3)', borderRadius: '20px',
+  border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden', padding: '10px',
 }
 
 const infoStyle = {
-  padding: '0 16px 16px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '6px',
+  padding: '0 8px 8px', display: 'flex', flexDirection: 'column', gap: '2px',
 }

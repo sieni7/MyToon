@@ -1,0 +1,28 @@
+import { useNavigate } from 'react-router-dom'
+import Hero from '../components/hero/Hero'
+import BeforeAfter from '../components/home/BeforeAfter'
+import Products from '../components/home/Products'
+import Gallery from '../components/gallery/Gallery'
+import Features from '../components/features/Features'
+import Phases from '../components/features/Phases'
+import Testimonials from '../components/features/Testimonials'
+import FAQ from '../components/features/FAQ'
+import CTA from '../components/cta/CTA'
+
+export default function HomePage() {
+  const navigate = useNavigate()
+
+  return (
+    <>
+      <Hero onCtaClick={() => navigate('/commande')} />
+      <BeforeAfter />
+      <Features />
+      <Products />
+      <Gallery />
+      <Phases />
+      <Testimonials />
+      <FAQ />
+      <CTA />
+    </>
+  )
+}
