@@ -22,6 +22,26 @@ export default function Header() {
     navigate('/commande')
   }
 
+  const isAdmin = location.pathname.startsWith('/admin')
+
+  if (isAdmin) {
+    return (
+      <header style={headerStyle}>
+        <div className="container" style={innerStyle}>
+          <Link to="/" style={logoStyle}>
+            <span style={logoAccent}>M</span>y<span style={logoAccent}>T</span>oon
+            <span style={atelierBadgeStyle}>Atelier</span>
+          </Link>
+          <nav className="nav-desktop" style={navStyle}>
+            <Link to="/" style={navLinkStyle}>
+              Voir le site →
+            </Link>
+          </nav>
+        </div>
+      </header>
+    )
+  }
+
   return (
     <header style={headerStyle}>
       <div className="container" style={innerStyle}>
@@ -102,6 +122,18 @@ const logoStyle = {
 }
 
 const logoAccent = { color: 'var(--orange)' }
+
+const atelierBadgeStyle = {
+  fontSize: '12px',
+  fontWeight: 600,
+  color: 'var(--gold)',
+  border: '1px solid rgba(212, 175, 55, 0.4)',
+  borderRadius: '100px',
+  padding: '3px 10px',
+  marginLeft: '10px',
+  verticalAlign: 'middle',
+  letterSpacing: '1px',
+}
 
 const navStyle = {
   display: 'flex',
