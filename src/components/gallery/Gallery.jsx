@@ -1,4 +1,4 @@
-import { ACTIVE_AVATARS, getStyle } from '../../utils/constants'
+import { ACTIVE_AVATARS, ACTIVE_STYLES, getStyle } from '../../utils/constants'
 import AvatarImage from '../common/AvatarImage'
 
 export default function Gallery() {
