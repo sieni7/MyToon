@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ACTIVE_STYLES, ACTIVE_AVATARS, PRODUCTS, SIZE_GUIDE, formatPrice, getStyle } from '../utils/constants'
 import AvatarImage from '../components/common/AvatarImage'
 import UploadArea from '../components/upload/UploadArea'
@@ -10,9 +10,14 @@ import { createOrder } from '../services/orders'
 const STEP_LABELS = ['Avatar', 'Support', 'Photo & infos']
 
 export default function OrderPage() {
+  const [searchParams] = useSearchParams()
+  const presetStyle = ACTIVE_STYLES.find((s) => s.id === searchParams.get('style'))
   const [step, setStep] = useState(1)
-  const [styleId, setStyleId] = useState(ACTIVE_STYLES[0].id)
-  const [avatar, setAvatar] = useState(null)
+  const [styleId, setStyleId] = useState(presetStyle ? presetStyle.id : ACTIVE_STYLES[0].id)
+  const [avatar, setAvatar] = useState(() => {
+    if (!presetStyle) return null
+    return ACTIVE_AVATARS.find((a) => a.style === presetStyle.id) || null
+  })
   const [product, setProduct] = useState(PRODUCTS[0])
   const [size, setSize] = useState(null)
   const [color, setColor] = useState(null)

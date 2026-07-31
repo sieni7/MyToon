@@ -85,6 +85,12 @@ export async function listOrders() {
   return data || []
 }
 
+export async function getOrderStats() {
+  if (!supabase) return null
+  const { data } = await supabase.rpc('order_stats')
+  return data || null
+}
+
 export async function isAdmin() {
   const user = await getCurrentUser()
   if (!user) return false
