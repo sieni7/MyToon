@@ -34,7 +34,7 @@ export default function Footer() {
             <em>"Fièrement conçu à Abidjan, trempé dans l'énergie du macadam."</em>
           </p>
           <div style={socialStyle}>
-            <a href="#" className="footer-social" aria-label="WhatsApp">💬</a>
+            <a href="https://wa.me/2250545298280" target="_blank" rel="noopener noreferrer" className="footer-social" aria-label="WhatsApp">💬</a>
             <a href="#" className="footer-social" aria-label="Instagram">📸</a>
             <a href="#" className="footer-social" aria-label="TikTok">🎵</a>
           </div>
@@ -50,9 +50,8 @@ export default function Footer() {
           </div>
           <div style={colStyle}>
             <h4 style={colTitle}>Contact</h4>
-            <a href="tel:+2250707070707" className="footer-link">📞 +225 07 07 07 07 07</a>
-            <a href="#" className="footer-link">💬 WhatsApp</a>
-            <a href="mailto:hello@mytoon.ci" className="footer-link">✉️ hello@mytoon.ci</a>
+            <a href="tel:+2250716535580" className="footer-link">📞 +225 07 16 53 55 80</a>
+            <a href="https://wa.me/2250545298280" target="_blank" rel="noopener noreferrer" className="footer-link">💬 WhatsApp +225 05 45 29 82 80</a>
             <p style={mutedStyle}>📍 Abidjan, Côte d'Ivoire</p>
           </div>
           <div style={colStyle}>
@@ -74,7 +73,7 @@ export default function Footer() {
       </div>
 
       <div className="container footer-bottom" style={bottomStyle}>
-        <p style={copyStyle}>&copy; {new Date().getFullYear()} MyToon — Abidjan, Côte d'Ivoire. Tous droits réservés.</p>
+        <p style={copyStyle}>&copy; {new Date().getFullYear()} MyToon — OULAI Siéni. Tous droits réservés.</p>
         <p style={madeStyle}>Conçu avec <span style={{ color: 'var(--orange)' }}>🔥</span> au pays du toon</p>
       </div>
     </footer>
