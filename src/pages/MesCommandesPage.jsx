@@ -1,36 +1,46 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getSessionPhone, isLoggedIn } from '../services/session'
-import { listOrdersByPhone } from '../services/orders'
+import { ensureLoggedIn } from '../services/session'
+import { listMyOrders } from '../services/orders'
 import { getStatus, getStyle, formatPrice } from '../utils/constants'
 
 export default function MesCommandesPage() {
-  if (!isLoggedIn()) {
+  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState([])
+
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      await ensureLoggedIn()
+      const list = await listMyOrders()
+      if (active) {
+        setOrders(list)
+        setLoading(false)
+      }
+    })()
+    return () => { active = false }
+  }, [])
+
+  if (loading) {
     return (
       <div className="container" style={wrapStyle}>
-        <div style={emptyCardStyle}>
-          <span style={{ fontSize: '48px' }}>🔒</span>
-          <h1 style={titleStyle}>Connecte-toi d'abord</h1>
-          <p style={subStyle}>Identifie-toi avec ton numéro pour voir tes commandes.</p>
-          <Link to="/espace" className="btn btn-primary">Me connecter</Link>
-        </div>
+        <p style={subStyle}>Chargement…</p>
       </div>
     )
   }
-
-  const orders = listOrdersByPhone(getSessionPhone())
 
   return (
     <div className="container" style={wrapStyle}>
       <div style={headerStyle}>
         <h1 style={titleStyle}>Mes <span className="gradient-text">commandes</span></h1>
-        <p style={subStyle}>{orders.length} commande(s) • {getSessionPhone()}</p>
+        <p style={subStyle}>{orders.length} commande(s) sur cet appareil</p>
       </div>
 
       {orders.length === 0 && (
         <div style={emptyCardStyle}>
           <span style={{ fontSize: '48px' }}>🛍️</span>
           <h2 style={{ fontSize: '22px', color: 'var(--white)' }}>Aucune commande</h2>
-          <p style={subStyle}>Tu n'as pas encore commandé avec ce numéro.</p>
+          <p style={subStyle}>Tu n'as pas encore commandé sur cet appareil.</p>
           <Link to="/commande" className="btn btn-primary">Créer mon toon</Link>
         </div>
       )}
@@ -41,11 +51,11 @@ export default function MesCommandesPage() {
           return (
             <Link
               key={order.id}
-              to={`/espace/commande/${order.id}`}
+              to={`/espace/commande/${order.code}`}
               style={orderCardStyle}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-                <span style={orderIdStyle}>{order.id}</span>
+                <span style={orderIdStyle}>{order.code}</span>
                 <span style={metaStyle}>
                   {getStyle(order.avatar.style).name} • {order.product.name}
                 </span>
@@ -53,7 +63,7 @@ export default function MesCommandesPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
                 <span style={statusBadgeStyle}>{status.icon} {status.label}</span>
                 <span style={priceStyle}>{formatPrice(order.product.price)}</span>
-                <span style={dateStyle}>{new Date(order.createdAt).toLocaleDateString('fr-FR')}</span>
+                <span style={dateStyle}>{new Date(order.created_at).toLocaleDateString('fr-FR')}</span>
                 <span style={{ color: 'var(--gold)' }}>→</span>
               </div>
             </Link>

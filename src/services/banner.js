@@ -1,19 +1,17 @@
-const KEY = 'mytoon_promo_banner'
+import { supabase } from '../lib/supabase'
 
+const KEY = 'promo'
 const DEFAULT_BANNER = { text: '', active: false }
 
-export function getBanner() {
-  try {
-    return { ...DEFAULT_BANNER, ...(JSON.parse(localStorage.getItem(KEY)) || {}) }
-  } catch {
-    return { ...DEFAULT_BANNER }
-  }
+export async function getBanner() {
+  if (!supabase) return { ...DEFAULT_BANNER }
+  const { data } = await supabase.from('settings').select('value').eq('key', KEY).maybeSingle()
+  return { ...DEFAULT_BANNER, ...(data?.value || {}) }
 }
 
-export function setBanner(banner) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify({ ...DEFAULT_BANNER, ...banner }))
-  } catch {
-    // ignore
-  }
+export async function setBanner(banner) {
+  if (!supabase) return
+  await supabase
+    .from('settings')
+    .upsert({ key: KEY, value: { ...DEFAULT_BANNER, ...banner } }, { onConflict: 'key' })
 }

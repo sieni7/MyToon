@@ -1,32 +1,62 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { getOrder, createReorder, isOrderOwner } from '../services/orders'
-import { getSessionPhone, isLoggedIn } from '../services/session'
+import { getOrder, createReorder, isAdmin } from '../services/orders'
+import { getCurrentUser } from '../lib/supabase'
 import OrderView from '../components/order/OrderView'
 
 export default function CommandeDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [order, setOrder] = useState(null)
+  const [notFound, setNotFound] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [isOwner, setIsOwner] = useState(false)
   const [version, setVersion] = useState(0)
-  const order = getOrder(id)
 
-  if (!order) {
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      setLoading(true)
+      const [found, user, admin] = await Promise.all([getOrder(id), getCurrentUser(), isAdmin()])
+      if (!active) return
+      if (!found) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
+      setOrder(found)
+      setIsOwner(admin || (user && found.owner_user_id === user.id))
+      setLoading(false)
+    })()
+    return () => { active = false }
+  }, [id, version])
+
+  const handleReorder = async () => {
+    const newOrder = await createReorder(order)
+    navigate(`/espace/commande/${newOrder.code}`)
+  }
+
+  if (loading) {
+    return (
+      <div className="container" style={wrapStyle}>
+        <p style={{ color: 'var(--gray-500)' }}>Chargement…</p>
+      </div>
+    )
+  }
+
+  if (notFound || !order) {
     return (
       <div className="container" style={wrapStyle}>
         <div style={msgCardStyle}>
           <span style={{ fontSize: '48px' }}>😕</span>
           <h1 style={titleStyle}>Commande introuvable</h1>
+          <p style={{ color: 'var(--gray-500)', fontSize: '14px', lineHeight: 1.6 }}>
+            Cette commande est introuvable ou privée. Connecte-toi avec l'appareil qui l'a passée.
+          </p>
           <Link to="/espace/commandes" className="btn btn-primary">Retour à mes commandes</Link>
         </div>
       </div>
     )
-  }
-
-  const isOwner = isLoggedIn() && isOrderOwner(order, getSessionPhone())
-
-  const handleReorder = () => {
-    const newOrder = createReorder(order)
-    navigate(`/espace/commande/${newOrder.id}`)
   }
 
   return (
@@ -35,18 +65,14 @@ export default function CommandeDetailPage() {
         <Link to="/espace/commandes" style={backLinkStyle}>← Mes commandes</Link>
       </div>
 
-      <OrderView key={version} order={order} full={isOwner} onChanged={() => setVersion((v) => v + 1)} />
+      <OrderView order={order} full={isOwner} onChanged={() => setVersion((v) => v + 1)} />
 
       {!isOwner && (
         <div style={lockCardStyle}>
           <span style={{ fontSize: '28px' }}>🔒</span>
           <p style={{ fontSize: '14px', color: 'var(--gray-500)', lineHeight: 1.6 }}>
-            Cette commande appartient au numéro <strong style={{ color: 'var(--white)' }}>{order.client.telephone}</strong>.
-            Connecte-toi avec ce numéro pour voir ta photo, tes déclinaisons et ton adresse.
+            Cette commande est privée. Connecte-toi avec l'appareil qui l'a passée pour voir ta photo, tes déclinaisons et ton adresse.
           </p>
-          <Link to="/espace" className="btn btn-primary" style={{ padding: '12px 24px', fontSize: '13px' }}>
-            Me connecter
-          </Link>
         </div>
       )}
 

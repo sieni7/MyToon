@@ -1,159 +1,157 @@
-const STORAGE_KEY = 'mytoon_orders'
-const COUNTER_KEY = 'mytoon_order_counter'
-
-export const STORAGE_LIMIT_BYTES = 4.5 * 1024 * 1024
-
-function readCounter() {
-  try {
-    return Number(localStorage.getItem(COUNTER_KEY)) || 0
-  } catch {
-    return 0
-  }
-}
-
-function readAll() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []
-  } catch {
-    return []
-  }
-}
-
-function writeAll(orders) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
-    return true
-  } catch {
-    return false
-  }
-}
-
-export function getStorageUsage() {
-  try {
-    let bytes = 0
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      bytes += (key.length + (localStorage.getItem(key) || '').length) * 2
-    }
-    return bytes
-  } catch {
-    return 0
-  }
-}
-
-function nextId() {
-  let n = readCounter() + 1
-  const orders = readAll()
-  let id
-  do {
-    id = `MT-${String(n).padStart(4, '0')}`
-    n++
-  } while (orders.some((o) => o.id === id))
-  try {
-    localStorage.setItem(COUNTER_KEY, String(n - 1))
-  } catch {
-    // ignore
-  }
-  return id
-}
-
-export function createOrder({ client, product, avatar, photoDataUrl, options }) {
-  const order = {
-    id: nextId(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    client,
-    product,
-    avatar,
-    photoDataUrl: photoDataUrl || null,
-    options: options || { size: null, color: null },
-    status: 'recue',
-    timeline: [{ status: 'recue', date: new Date().toISOString(), note: 'Commande enregistrée' }],
-    variations: [],
-    chosenVariation: null,
-    printerId: null,
-  }
-  const orders = readAll()
-  orders.unshift(order)
-  const saved = writeAll(orders)
-  return { order, saved }
-}
-
-export function getOrder(id) {
-  const normalized = String(id || '').trim().toUpperCase()
-  return readAll().find((o) => o.id === normalized) || null
-}
-
-export function listOrders() {
-  return readAll()
-}
+import { supabase, MEDIA_BUCKET, ensureSession, getCurrentUser } from '../lib/supabase'
 
 function normalizePhone(p) {
   return String(p || '').replace(/\D/g, '').slice(-9)
 }
 
-export function isOrderOwner(order, phone) {
-  if (!order || !phone) return false
-  return normalizePhone(order.client?.telephone) === normalizePhone(phone)
+function uid() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+  })
 }
 
-export function listOrdersByPhone(phone) {
-  const normalized = normalizePhone(phone)
-  if (!normalized) return []
-  return readAll().filter((o) => normalizePhone(o.client?.telephone) === normalized)
+async function requireUser() {
+  const user = await ensureSession()
+  if (!user) {
+    throw new Error("Connexion indisponible. Active la session anonyme dans le dashboard Supabase (Auth → Providers → Anonymous).")
+  }
+  return user
 }
 
-export function updateStatus(id, status, note = '') {
-  const orders = readAll()
-  const order = orders.find((o) => o.id === id)
+export async function createOrder({ client, product, avatar, photoFile, photoPath, options }) {
+  const user = await requireUser()
+
+  const { data: code, error: codeError } = await supabase.rpc('next_order_code')
+  if (codeError || !code) throw new Error('Impossible de générer le numéro de commande')
+
+  let finalPhotoPath = photoPath || null
+  if (!finalPhotoPath && photoFile) {
+    const ext = (photoFile.name || 'photo.jpg').split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg'
+    finalPhotoPath = `photos/${user.id}/${uid()}.${ext}`
+    const { error: uploadError } = await supabase.storage
+      .from(MEDIA_BUCKET)
+      .upload(finalPhotoPath, photoFile, { cacheControl: '3600', upsert: false })
+    if (uploadError) throw new Error('Échec de l\'envoi de la photo. Réessaie avec une image plus légère.')
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .insert({
+      code,
+      owner_user_id: user.id,
+      owner_phone: normalizePhone(client.telephone),
+      client,
+      product,
+      avatar,
+      options: options || { size: null, color: null },
+      photo_path: finalPhotoPath,
+      status: 'recue',
+      timeline: [{ status: 'recue', date: new Date().toISOString(), note: 'Commande enregistrée' }],
+      variations: [],
+      chosen_variation: null,
+      printer_id: null,
+    })
+    .select()
+    .single()
+  if (error) throw new Error('Impossible d\'enregistrer la commande : ' + error.message)
+  return data
+}
+
+export async function getOrder(code) {
+  if (!supabase) return null
+  const { data } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('code', String(code || '').trim().toUpperCase())
+    .maybeSingle()
+  return data || null
+}
+
+export async function listMyOrders() {
+  const user = await getCurrentUser()
+  if (!user) return []
+  const { data } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('owner_user_id', user.id)
+    .order('created_at', { ascending: false })
+  return data || []
+}
+
+export async function listOrders() {
+  const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
+  return data || []
+}
+
+export async function isAdmin() {
+  const user = await getCurrentUser()
+  if (!user) return false
+  const { data } = await supabase.from('admins').select('id').eq('id', user.id).maybeSingle()
+  return !!data
+}
+
+export async function updateStatus(code, status, note = '') {
+  const order = await getOrder(code)
   if (!order) return null
-  order.status = status
-  order.updatedAt = new Date().toISOString()
-  order.timeline.push({ status, date: new Date().toISOString(), note })
-  writeAll(orders)
-  return order
+  const timeline = [...(order.timeline || []), { status, date: new Date().toISOString(), note }]
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ status, timeline, updated_at: new Date().toISOString() })
+    .eq('code', code)
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  return data
 }
 
-export function setVariations(id, variations) {
-  const orders = readAll()
-  const order = orders.find((o) => o.id === id)
-  if (!order) return null
-  order.variations = variations
-  order.status = 'propositions_pretes'
-  order.updatedAt = new Date().toISOString()
-  order.timeline.push({ status: 'propositions_pretes', date: new Date().toISOString(), note: '3 déclinaisons ajoutées' })
-  writeAll(orders)
-  return order
+export async function setVariations(code, files) {
+  const order = await getOrder(code)
+  if (!order || !files || files.length === 0) return null
+  const paths = []
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    const ext = (file.name || 'v.jpg').split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg'
+    const path = `variations/${order.code}/${i + 1}.${ext}`
+    const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, file, { upsert: true })
+    if (error) throw new Error('Échec de l\'envoi d\'une déclinaison')
+    paths.push(path)
+  }
+  const timeline = [...(order.timeline || []), { status: 'propositions_pretes', date: new Date().toISOString(), note: '3 déclinaisons ajoutées' }]
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ variations: paths, status: 'propositions_pretes', timeline, updated_at: new Date().toISOString() })
+    .eq('code', order.code)
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  return data
 }
 
-export function chooseVariation(id, variationIndex) {
-  const orders = readAll()
-  const order = orders.find((o) => o.id === id)
-  if (!order) return null
-  order.chosenVariation = order.variations[variationIndex] || null
-  order.status = 'validee'
-  order.updatedAt = new Date().toISOString()
-  order.timeline.push({ status: 'validee', date: new Date().toISOString(), note: 'Déclinaison validée par le client' })
-  writeAll(orders)
-  return order
+export async function chooseVariation(code, index) {
+  const { error } = await supabase.rpc('choose_variation', { order_code: code, variation_index: index })
+  if (error) throw new Error(error.message)
+  return getOrder(code)
 }
 
-export function assignPrinter(id, printerId) {
-  const orders = readAll()
-  const order = orders.find((o) => o.id === id)
-  if (!order) return null
-  order.printerId = printerId || null
-  writeAll(orders)
-  return order
+export async function assignPrinter(code, printerId) {
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ printer_id: printerId || null, updated_at: new Date().toISOString() })
+    .eq('code', code)
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  return data
 }
 
-export function createReorder(order) {
-  const { order: created } = createOrder({
+export async function createReorder(order) {
+  return createOrder({
     client: { ...order.client },
     product: { ...order.product },
     avatar: { ...order.avatar },
-    photoDataUrl: order.photoDataUrl,
     options: { ...(order.options || {}) },
+    photoPath: order.photo_path || undefined,
   })
-  return created
 }

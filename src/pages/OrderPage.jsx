@@ -4,9 +4,8 @@ import { ACTIVE_STYLES, ACTIVE_AVATARS, PRODUCTS, SIZE_GUIDE, formatPrice, getSt
 import AvatarImage from '../components/common/AvatarImage'
 import UploadArea from '../components/upload/UploadArea'
 import { useImageUpload } from '../hooks/useImageUpload'
-import { compressImage } from '../utils/image'
-import { createOrder, getStorageUsage, STORAGE_LIMIT_BYTES } from '../services/orders'
-import { login as sessionLogin } from '../services/session'
+import { compressImageToBlob } from '../utils/image'
+import { createOrder } from '../services/orders'
 
 const STEP_LABELS = ['Avatar', 'Support', 'Photo & infos']
 
@@ -32,28 +31,18 @@ export default function OrderPage() {
     setSubmitting(true)
     setSubmitError(null)
     try {
-      const photoDataUrl = await compressImage(image)
-      const estimated = getStorageUsage() + photoDataUrl.length * 2
-      if (estimated > STORAGE_LIMIT_BYTES) {
-        setSubmitError('Ta photo est trop lourde pour être enregistrée sur cet appareil. Choisis une photo plus légère, ou utilise un autre navigateur.')
-        return
-      }
-      const { order: created, saved } = createOrder({
+      const photoBlob = await compressImageToBlob(image)
+      const created = await createOrder({
         client: { ...form },
         product: { id: product.id, name: product.name, price: product.price },
         avatar: { id: avatar.id, style: avatar.style, name: avatar.name },
-        photoDataUrl,
+        photoFile: photoBlob,
         options: { size, color },
       })
-      if (!saved) {
-        setSubmitError("Impossible d'enregistrer ta commande sur cet appareil (stockage plein ou bloqué). Réessaie ou change de navigateur.")
-        return
-      }
-      sessionLogin(form.telephone)
       setOrder(created)
       setStep(4)
     } catch (e) {
-      setSubmitError('Erreur lors de la création de la commande : ' + e.message)
+      setSubmitError(e.message)
     } finally {
       setSubmitting(false)
     }

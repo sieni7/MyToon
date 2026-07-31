@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import { ORDER_STATUSES, getStatus, getStyle, formatPrice, ADMIN_PASSCODE } from '../utils/constants'
-import { listOrders, updateStatus, setVariations, assignPrinter } from '../services/orders'
+import { useEffect, useState } from 'react'
+import { ORDER_STATUSES, getStatus, getStyle, formatPrice } from '../utils/constants'
+import { listOrders, updateStatus, setVariations, assignPrinter, isAdmin } from '../services/orders'
 import { getBanner, setBanner } from '../services/banner'
+import { signInAdmin, signOut } from '../lib/supabase'
+import SignedImage from '../components/common/SignedImage'
 
 const NEXT_STATUS = {}
 ORDER_STATUSES.forEach((s, i) => {
@@ -9,58 +11,111 @@ ORDER_STATUSES.forEach((s, i) => {
 })
 
 export default function AdminPage() {
-  const [authed, setAuthed] = useState(false)
-  const [passcode, setPasscode] = useState('')
-  const [authError, setAuthError] = useState(false)
+  const [status, setStatus] = useState('loading')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(null)
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    ;(async () => {
+      const adm = await isAdmin()
+      setStatus(adm ? 'ok' : 'login')
+    })()
+  }, [])
+
+  const handleLogin = async (e) => {
     e.preventDefault()
-    if (passcode === ADMIN_PASSCODE) {
-      setAuthed(true)
-      setAuthError(false)
+    setError(null)
+    const { error: signInError } = await signInAdmin(email, password)
+    if (signInError) { setError(signInError); return }
+    const adm = await isAdmin()
+    if (adm) {
+      setStatus('ok')
+      setPassword('')
     } else {
-      setAuthError(true)
+      await signOut()
+      setError("Ce compte n'est pas un administrateur MyToon.")
     }
   }
 
-  if (!authed) {
+  const handleLogout = async () => {
+    await signOut()
+    setStatus('login')
+    setPassword('')
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="container" style={wrapStyle}>
+        <p style={{ color: 'var(--gray-500)' }}>Chargement…</p>
+      </div>
+    )
+  }
+
+  if (status === 'login') {
     return (
       <div className="container" style={wrapStyle}>
         <div style={loginCardStyle}>
           <h1 style={loginTitleStyle}>Dashboard <span className="gradient-text">MyToon</span></h1>
-          <p style={loginSubStyle}>Espace réservé — entre le code d'accès</p>
+          <p style={loginSubStyle}>Espace réservé — connecte-toi avec ton compte administrateur</p>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+            <input
+              type="email"
+              style={inputStyle}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email administrateur"
+              autoComplete="email"
+            />
             <input
               type="password"
               style={inputStyle}
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
-              placeholder="Code d'accès"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mot de passe"
+              autoComplete="current-password"
             />
-            {authError && <p style={{ color: '#ef4444', fontSize: '13px' }}>Code incorrect</p>}
+            {error && <p style={{ color: '#ef4444', fontSize: '13px' }}>{error}</p>}
             <button className="btn btn-primary" type="submit">Accéder</button>
           </form>
+          <p style={loginSubStyle}>
+            Le compte admin se crée avec le script <code style={{ color: 'var(--gold)' }}>scripts/seed-admin.mjs</code> ou depuis le dashboard Supabase.
+          </p>
         </div>
       </div>
     )
   }
 
-  return <Dashboard />
+  return <Dashboard onLogout={handleLogout} />
 }
 
-function Dashboard() {
+function Dashboard({ onLogout }) {
   const [version, setVersion] = useState(0)
   const [filter, setFilter] = useState('all')
   const [expanded, setExpanded] = useState(null)
-  const [banner, setBannerState] = useState(getBanner())
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [banner, setBannerState] = useState({ text: '', active: false })
   const [bannerSaved, setBannerSaved] = useState(false)
-  const orders = listOrders()
+
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      const [list, b] = await Promise.all([listOrders(), getBanner()])
+      if (active) {
+        setOrders(list)
+        setBannerState(b)
+        setLoading(false)
+      }
+    })()
+    return () => { active = false }
+  }, [version])
 
   const refresh = () => setVersion((v) => v + 1)
 
-  const saveBanner = (e) => {
+  const saveBanner = async (e) => {
     e.preventDefault()
-    setBanner(banner)
+    await setBanner(banner)
     setBannerSaved(true)
     setTimeout(() => setBannerSaved(false), 2000)
   }
@@ -81,9 +136,14 @@ function Dashboard() {
           <h1 style={titleStyle}>Commandes</h1>
           <p style={subStyle}>{orders.length} commande(s) enregistrée(s)</p>
         </div>
-        <button className="btn btn-secondary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={() => { setExpanded(null); setFilter('all'); refresh() }}>
-          Rafraîchir
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn btn-secondary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={refresh}>
+            Rafraîchir
+          </button>
+          <button className="btn btn-secondary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={onLogout}>
+            Déconnexion
+          </button>
+        </div>
       </div>
 
       <form onSubmit={saveBanner} style={bannerCardStyle}>
@@ -125,14 +185,15 @@ function Dashboard() {
         ))}
       </div>
 
-      {filtered.length === 0 && (
+      {loading && <p style={emptyStyle}>Chargement…</p>}
+      {!loading && filtered.length === 0 && (
         <p style={emptyStyle}>Aucune commande ici pour le moment.</p>
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {filtered.map((order) => (
           <OrderCard
-            key={order.id + version}
+            key={order.id}
             order={order}
             open={expanded === order.id}
             onToggle={() => setExpanded(expanded === order.id ? null : order.id)}
@@ -145,34 +206,44 @@ function Dashboard() {
 }
 
 function OrderCard({ order, open, onToggle, onChanged }) {
-  const [printerId, setPrinterId] = useState(order.printerId || '')
+  const [printerId, setPrinterId] = useState(order.printer_id || '')
   const status = getStatus(order.status)
   const next = NEXT_STATUS[order.status]
 
-  const handleVariations = (files) => {
-    const valid = files.filter((f) => f && f.type.startsWith('image/')).slice(0, 3)
-    const readers = valid.map((f) => new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
-      reader.onerror = reject
-      reader.readAsDataURL(f)
-    }))
-    Promise.all(readers).then((urls) => {
-      setVariations(order.id, urls)
+  const handleVariations = async (files) => {
+    const valid = [...files].filter((f) => f && f.type.startsWith('image/')).slice(0, 3)
+    if (valid.length === 0) return
+    try {
+      await setVariations(order.code, valid)
       onChanged()
-    })
+    } catch (e) {
+      alert(e.message)
+    }
   }
 
-  const handleAssignPrinter = () => {
-    assignPrinter(order.id, printerId.trim())
-    onChanged()
+  const handleStatus = async () => {
+    try {
+      await updateStatus(order.code, next)
+      onChanged()
+    } catch (e) {
+      alert(e.message)
+    }
+  }
+
+  const handleAssignPrinter = async () => {
+    try {
+      await assignPrinter(order.code, printerId.trim())
+      onChanged()
+    } catch (e) {
+      alert(e.message)
+    }
   }
 
   return (
     <div style={cardStyle}>
       <button onClick={onToggle} style={cardHeaderStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={orderIdStyle}>{order.id}</span>
+          <span style={orderIdStyle}>{order.code}</span>
           <span style={metaStyle}>
             {getStyle(order.avatar.style).name} • {order.product.name} • {formatPrice(order.product.price)}
           </span>
@@ -197,14 +268,14 @@ function OrderCard({ order, open, onToggle, onChanged }) {
             </div>
             <div style={boxStyle}>
               <p style={boxTitleStyle}>📷 Photo du client</p>
-              {order.photoDataUrl && <img src={order.photoDataUrl} alt="Photo" style={photoStyle} />}
+              {order.photo_path && <SignedImage path={order.photo_path} style={photoStyle} alt="Photo" />}
             </div>
           </div>
 
           <div style={actionRowStyle}>
             <p style={boxTitleStyle}>Statut actuel : {status.label}</p>
             {next && (
-              <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={() => { updateStatus(order.id, next); onChanged() }}>
+              <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={handleStatus}>
                 Passer à : {getStatus(next).label}
               </button>
             )}
@@ -216,11 +287,11 @@ function OrderCard({ order, open, onToggle, onChanged }) {
               {[0, 1, 2].map((i) => (
                 <div key={i} style={variationSlotStyle}>
                   {order.variations[i] ? (
-                    <img src={order.variations[i]} alt={`Déclinaison ${i + 1}`} style={variationImgStyle} />
+                    <SignedImage path={order.variations[i]} style={variationImgStyle} alt={`Déclinaison ${i + 1}`} />
                   ) : (
                     <span style={{ fontSize: '12px', color: 'var(--gray-600)' }}>Vide</span>
                   )}
-                  {order.chosenVariation === order.variations[i] && <span style={chosenBadgeStyle}>✓ Choisie</span>}
+                  {order.chosen_variation === order.variations[i] && <span style={chosenBadgeStyle}>✓ Choisie</span>}
                 </div>
               ))}
             </div>
@@ -274,7 +345,7 @@ const loginCardStyle = {
 
 const loginTitleStyle = { fontFamily: "'Space Grotesk', sans-serif", fontSize: '28px', fontWeight: 700, letterSpacing: '-1px', color: 'var(--white)' }
 
-const loginSubStyle = { fontSize: '14px', color: 'var(--gray-500)' }
+const loginSubStyle = { fontSize: '13px', color: 'var(--gray-500)', lineHeight: 1.6 }
 
 const inputStyle = {
   padding: '14px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',

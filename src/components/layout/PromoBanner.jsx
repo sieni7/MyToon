@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getBanner } from '../../services/banner'
 
 const CLOSE_KEY = 'mytoon_banner_closed'
@@ -13,7 +13,13 @@ function isClosed() {
 
 export default function PromoBanner() {
   const [closed, setClosed] = useState(isClosed())
-  const banner = getBanner()
+  const [banner, setBanner] = useState({ text: '', active: false })
+
+  useEffect(() => {
+    let active = true
+    getBanner().then((b) => { if (active) setBanner(b) }).catch(() => {})
+    return () => { active = false }
+  }, [])
 
   if (!banner.active || !banner.text || closed) return null
 

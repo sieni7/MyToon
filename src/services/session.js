@@ -1,33 +1,18 @@
-const KEY = 'mytoon_client_phone'
+import { getCurrentUser, ensureSession, signOut as supabaseSignOut } from '../lib/supabase'
 
-export function login(phone) {
-  try {
-    localStorage.setItem(KEY, phone)
-  } catch {
-    // ignore
-  }
+export async function isLoggedIn() {
+  return !!(await getCurrentUser())
 }
 
-export function logout() {
-  try {
-    localStorage.removeItem(KEY)
-  } catch {
-    // ignore
-  }
+export async function ensureLoggedIn() {
+  return ensureSession()
 }
 
-export function getSessionPhone() {
-  try {
-    return localStorage.getItem(KEY) || null
-  } catch {
-    return null
-  }
+export async function currentUserId() {
+  const user = await getCurrentUser()
+  return user ? user.id : null
 }
 
-export function isLoggedIn() {
-  return !!getSessionPhone()
-}
-
-export function validateCode(code) {
-  return /^\d{4}$/.test(code)
+export async function signOut() {
+  await supabaseSignOut()
 }

@@ -1,11 +1,16 @@
 import { getStatus, getStyle, ORDER_STATUSES, formatPrice } from '../../utils/constants'
 import { chooseVariation } from '../../services/orders'
+import SignedImage from '../common/SignedImage'
 
 export default function OrderView({ order, full = false, onChanged }) {
   const currentIndex = ORDER_STATUSES.findIndex((s) => s.id === order.status)
 
-  const handleChoose = (idx) => {
-    chooseVariation(order.id, idx)
+  const handleChoose = async (idx) => {
+    try {
+      await chooseVariation(order.code, idx)
+    } catch (e) {
+      alert(e.message)
+    }
     if (onChanged) onChanged()
   }
 
@@ -13,7 +18,7 @@ export default function OrderView({ order, full = false, onChanged }) {
     <div style={cardStyle}>
       <div style={orderHeaderStyle}>
         <div>
-          <h2 style={orderIdStyle}>{order.id}</h2>
+          <h2 style={orderIdStyle}>{order.code}</h2>
           <p style={orderMetaStyle}>
             {getStyle(order.avatar.style).name} • {order.product.name} • {formatPrice(order.product.price)}
           </p>
@@ -56,10 +61,10 @@ export default function OrderView({ order, full = false, onChanged }) {
           <h3 style={variationsTitleStyle}>Tes 3 déclinaisons — choisis ta préférée</h3>
           <div className="variations-grid" style={variationsGridStyle}>
             {order.variations.map((variation, i) => {
-              const isChosen = order.chosenVariation === variation
+              const isChosen = order.chosen_variation === variation
               return (
                 <div key={i} style={{ ...variationCardStyle, borderColor: isChosen ? 'var(--yellow)' : 'rgba(255,255,255,0.08)' }}>
-                  <img src={variation} alt={`Déclinaison ${i + 1}`} style={variationImgStyle} />
+                  <SignedImage path={variation} style={variationImgStyle} alt={`Déclinaison ${i + 1}`} />
                   <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--gray-400)' }}>Déclinaison {i + 1}</p>
                   {isChosen ? (
                     <span style={chosenBadgeStyle}>✓ Choisie</span>
@@ -81,7 +86,7 @@ export default function OrderView({ order, full = false, onChanged }) {
         <div className="tracking-photo-row" style={photoRowStyle}>
           <div style={photoBoxStyle}>
             <p style={photoLabelStyle}>📷 Ta photo</p>
-            {order.photoDataUrl && <img src={order.photoDataUrl} alt="Photo du client" style={photoImgStyle} />}
+            {order.photo_path && <SignedImage path={order.photo_path} style={photoImgStyle} alt="Photo du client" />}
           </div>
           <div style={infoBoxStyle}>
             <p style={photoLabelStyle}>👤 Livraison</p>
