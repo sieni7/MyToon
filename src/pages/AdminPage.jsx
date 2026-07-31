@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
-import { ORDER_STATUSES, getStatus, getStyle, formatPrice } from '../utils/constants'
+import { ORDER_STATUSES, getStatus, getStyle, formatPrice, AVATARS } from '../utils/constants'
 import { listOrders, updateStatus, setVariations, assignPrinter, isAdmin } from '../services/orders'
 import { getBanner, setBanner } from '../services/banner'
 import { signInAdmin, signOut } from '../lib/supabase'
 import SignedImage from '../components/common/SignedImage'
+import AvatarImage from '../components/common/AvatarImage'
 
-const NEXT_STATUS = {}
-ORDER_STATUSES.forEach((s, i) => {
-  if (i < ORDER_STATUSES.length - 1) NEXT_STATUS[s.id] = ORDER_STATUSES[i + 1].id
-})
+const QUEUES = [
+  { id: 'to_do', label: 'À traiter', icon: '🆕', statuses: ['recue'], hint: 'Nouvelles commandes — crée les 3 déclinaisons' },
+  { id: 'creating', label: 'En création', icon: '🎨', statuses: ['en_creation'], hint: 'Création des 3 déclinaisons (1h chrono)' },
+  { id: 'validation', label: 'En validation client', icon: '⏳', statuses: ['propositions_pretes', 'validation_attente'], hint: 'Le client choisit sa déclinaison' },
+  { id: 'production', label: 'À produire / Livraison', icon: '🖨️', statuses: ['validee', 'en_impression', 'expediee', 'livree'], hint: 'Impression, imprimeur, livraison' },
+]
 
 export default function AdminPage() {
   const [status, setStatus] = useState('loading')
@@ -91,6 +94,7 @@ export default function AdminPage() {
 
 function Dashboard({ onLogout }) {
   const [version, setVersion] = useState(0)
+  const [tab, setTab] = useState('orders')
   const [filter, setFilter] = useState('all')
   const [expanded, setExpanded] = useState(null)
   const [orders, setOrders] = useState([])
@@ -120,21 +124,21 @@ function Dashboard({ onLogout }) {
     setTimeout(() => setBannerSaved(false), 2000)
   }
 
-  const filtered = filter === 'all' ? orders : orders.filter((o) => o.status === filter)
+  const inQueue = (o) => QUEUES.find((q) => q.statuses.includes(o.status))
+  const filtered = filter === 'all'
+    ? orders
+    : filter === 'to_do' || filter === 'creating' || filter === 'validation' || filter === 'production'
+      ? orders.filter((o) => QUEUES.find((q) => q.id === filter).statuses.includes(o.status))
+      : orders.filter((o) => o.status === filter)
 
-  const stats = {
-    all: orders.length,
-    active: orders.filter((o) => !['livree', 'expediee'].includes(o.status)).length,
-    waiting: orders.filter((o) => ['en_creation', 'propositions_pretes', 'validation_attente'].includes(o.status)).length,
-    done: orders.filter((o) => o.status === 'livree').length,
-  }
+  const queueCount = (id) => orders.filter((o) => QUEUES.find((q) => q.id === id).statuses.includes(o.status)).length
 
   return (
     <div className="container" style={wrapStyle}>
       <div style={headerRowStyle}>
         <div>
-          <h1 style={titleStyle}>Commandes</h1>
-          <p style={subStyle}>{orders.length} commande(s) enregistrée(s)</p>
+          <h1 style={titleStyle}>Atelier <span className="gradient-text">MyToon</span></h1>
+          <p style={subStyle}>{orders.length} commande(s) — suivi du travail en temps réel</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="btn btn-secondary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={refresh}>
@@ -146,69 +150,100 @@ function Dashboard({ onLogout }) {
         </div>
       </div>
 
-      <form onSubmit={saveBanner} style={bannerCardStyle}>
-        <div style={{ flex: 1, minWidth: '240px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <p style={boxTitleStyle}>⚡ Bandeau promo (affiché sur tout le site)</p>
-          <input
-            style={bannerInputStyle}
-            value={banner.text}
-            onChange={(e) => setBannerState({ ...banner, text: e.target.value })}
-            placeholder="Ex : −10% cette semaine avec le code TOON10"
-          />
-        </div>
-        <label style={toggleStyle}>
-          <input
-            type="checkbox"
-            checked={banner.active}
-            onChange={(e) => setBannerState({ ...banner, active: e.target.checked })}
-          />
-          Actif
-        </label>
-        <button className="btn btn-primary" type="submit" style={{ padding: '12px 24px', fontSize: '13px' }}>
-          {bannerSaved ? '✓ Enregistré' : 'Enregistrer'}
+      <div style={tabRowStyle}>
+        <button style={{ ...tabStyle, color: tab === 'orders' ? 'var(--orange)' : 'var(--gray-400)', borderColor: tab === 'orders' ? 'rgba(255,107,53,0.5)' : 'rgba(255,255,255,0.1)' }} onClick={() => setTab('orders')}>
+          🛠️ Commandes
         </button>
-      </form>
-
-      <div className="admin-stats" style={statsRowStyle}>
-        <div style={statCardStyle}><span style={statNumStyle}>{stats.all}</span><span style={statLabelStyle}>Total</span></div>
-        <div style={statCardStyle}><span style={statNumStyle}>{stats.active}</span><span style={statLabelStyle}>En cours</span></div>
-        <div style={statCardStyle}><span style={statNumStyle}>{stats.waiting}</span><span style={statLabelStyle}>En création</span></div>
-        <div style={statCardStyle}><span style={statNumStyle}>{stats.done}</span><span style={statLabelStyle}>Livrées</span></div>
+        <button style={{ ...tabStyle, color: tab === 'settings' ? 'var(--orange)' : 'var(--gray-400)', borderColor: tab === 'settings' ? 'rgba(255,107,53,0.5)' : 'rgba(255,255,255,0.1)' }} onClick={() => setTab('settings')}>
+          ⚙️ Réglages
+        </button>
       </div>
 
-      <div style={filterStyle}>
-        <button style={{ ...filterChipStyle, color: filter === 'all' ? 'var(--orange)' : 'var(--gray-400)' }} onClick={() => setFilter('all')}>Toutes</button>
-        {ORDER_STATUSES.map((s) => (
-          <button key={s.id} style={{ ...filterChipStyle, color: filter === s.id ? 'var(--orange)' : 'var(--gray-400)' }} onClick={() => setFilter(s.id)}>
-            {s.icon} {s.label}
+      {tab === 'settings' && (
+        <form onSubmit={saveBanner} style={bannerCardStyle}>
+          <div style={{ flex: 1, minWidth: '240px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <p style={boxTitleStyle}>⚡ Bandeau promo (affiché sur tout le site)</p>
+            <input
+              style={bannerInputStyle}
+              value={banner.text}
+              onChange={(e) => setBannerState({ ...banner, text: e.target.value })}
+              placeholder="Ex : −10% cette semaine avec le code TOON10"
+            />
+          </div>
+          <label style={toggleStyle}>
+            <input
+              type="checkbox"
+              checked={banner.active}
+              onChange={(e) => setBannerState({ ...banner, active: e.target.checked })}
+            />
+            Actif
+          </label>
+          <button className="btn btn-primary" type="submit" style={{ padding: '12px 24px', fontSize: '13px' }}>
+            {bannerSaved ? '✓ Enregistré' : 'Enregistrer'}
           </button>
-        ))}
-      </div>
-
-      {loading && <p style={emptyStyle}>Chargement…</p>}
-      {!loading && filtered.length === 0 && (
-        <p style={emptyStyle}>Aucune commande ici pour le moment.</p>
+        </form>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {filtered.map((order) => (
-          <OrderCard
-            key={order.id}
-            order={order}
-            open={expanded === order.id}
-            onToggle={() => setExpanded(expanded === order.id ? null : order.id)}
-            onChanged={refresh}
-          />
-        ))}
-      </div>
+      {tab === 'orders' && (
+        <>
+          <div className="admin-stats" style={statsRowStyle}>
+            {QUEUES.map((q) => (
+              <button
+                key={q.id}
+                onClick={() => setFilter(q.id)}
+                style={{ ...statCardStyle, cursor: 'pointer', borderColor: filter === q.id ? 'var(--orange)' : 'rgba(255,255,255,0.06)' }}
+              >
+                <span style={statIconStyle}>{q.icon}</span>
+                <span style={statNumStyle}>{queueCount(q.id)}</span>
+                <span style={statLabelStyle}>{q.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div style={filterStyle}>
+            <button style={{ ...filterChipStyle, color: filter === 'all' ? 'var(--orange)' : 'var(--gray-400)' }} onClick={() => setFilter('all')}>Toutes</button>
+            {QUEUES.map((q) => (
+              <button key={q.id} style={{ ...filterChipStyle, color: filter === q.id ? 'var(--orange)' : 'var(--gray-400)' }} onClick={() => setFilter(q.id)}>
+                {q.icon} {q.label}
+              </button>
+            ))}
+            {ORDER_STATUSES.map((s) => (
+              <button key={s.id} style={{ ...filterChipStyle, color: filter === s.id ? 'var(--orange)' : 'var(--gray-500)' }} onClick={() => setFilter(s.id)}>
+                {s.icon} {s.label}
+              </button>
+            ))}
+          </div>
+
+          {loading && <p style={emptyStyle}>Chargement…</p>}
+          {!loading && filtered.length === 0 && (
+            <p style={emptyStyle}>Aucune commande ici pour le moment.</p>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {filtered.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                queue={inQueue(order)}
+                open={expanded === order.id}
+                onToggle={() => setExpanded(expanded === order.id ? null : order.id)}
+                onChanged={refresh}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
-function OrderCard({ order, open, onToggle, onChanged }) {
+function OrderCard({ order, queue, open, onToggle, onChanged }) {
   const [printerId, setPrinterId] = useState(order.printer_id || '')
   const status = getStatus(order.status)
-  const next = NEXT_STATUS[order.status]
+  const avatar = AVATARS.find((a) => a.id === order.avatar?.id)
+  const waitingClient = ['propositions_pretes', 'validation_attente'].includes(order.status)
+  const canProduce = ['validee', 'en_impression', 'expediee'].includes(order.status)
+  const canUpload = ['recue', 'en_creation'].includes(order.status)
 
   const handleVariations = async (files) => {
     const valid = [...files].filter((f) => f && f.type.startsWith('image/')).slice(0, 3)
@@ -221,7 +256,24 @@ function OrderCard({ order, open, onToggle, onChanged }) {
     }
   }
 
+  const markCreating = async () => {
+    try {
+      await updateStatus(order.code, 'en_creation', 'Création commencée')
+      onChanged()
+    } catch (e) {
+      alert(e.message)
+    }
+  }
+
   const handleStatus = async () => {
+    const next = status.id === 'validee'
+      ? 'en_impression'
+      : status.id === 'en_impression'
+        ? 'expediee'
+        : status.id === 'expediee'
+          ? 'livree'
+          : null
+    if (!next) return
     try {
       await updateStatus(order.code, next)
       onChanged()
@@ -239,16 +291,25 @@ function OrderCard({ order, open, onToggle, onChanged }) {
     }
   }
 
+  const nextLabel = status.id === 'validee'
+    ? 'Passer en impression'
+    : status.id === 'en_impression'
+      ? 'Passer en expédition'
+      : status.id === 'expediee'
+        ? 'Marquer comme livrée'
+        : null
+
   return (
     <div style={cardStyle}>
       <button onClick={onToggle} style={cardHeaderStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={orderIdStyle}>{order.code}</span>
           <span style={metaStyle}>
             {getStyle(order.avatar.style).name} • {order.product.name} • {formatPrice(order.product.price)}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {queue && <span style={queueBadgeStyle}>{queue.icon} {queue.label}</span>}
           <span style={statusBadgeStyle}>{status.icon} {status.label}</span>
           <span style={{ color: 'var(--gray-500)' }}>{open ? '▲' : '▼'}</span>
         </div>
@@ -265,24 +326,59 @@ function OrderCard({ order, open, onToggle, onChanged }) {
                 {order.product.name} — Taille {order.options?.size || '—'} • {order.options?.color || '—'}
               </p>
               <p style={boxTextStyle}>{[order.client.quartier, order.client.ville, order.client.adresse].filter(Boolean).join(', ')}</p>
+              {order.printer_id && <p style={{ ...boxTextStyle, color: 'var(--gold)' }}>🖨️ {order.printer_id}</p>}
             </div>
             <div style={boxStyle}>
               <p style={boxTitleStyle}>📷 Photo du client</p>
-              {order.photo_path && <SignedImage path={order.photo_path} style={photoStyle} alt="Photo" />}
+              {order.photo_path ? <SignedImage path={order.photo_path} style={photoStyle} alt="Photo" /> : <p style={boxTextStyle}>—</p>}
+            </div>
+            <div style={boxStyle}>
+              <p style={boxTitleStyle}>🦸 Avatar de référence (style à recréer)</p>
+              {avatar ? (
+                <AvatarImage avatar={{ ...avatar, style: order.avatar?.style }} size="110px" />
+              ) : (
+                <p style={boxTextStyle}>{getStyle(order.avatar?.style).name}</p>
+              )}
+              <p style={boxTextStyle}>{avatar?.name || getStyle(order.avatar?.style).name}</p>
             </div>
           </div>
 
-          <div style={actionRowStyle}>
-            <p style={boxTitleStyle}>Statut actuel : {status.label}</p>
-            {next && (
-              <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={handleStatus}>
-                Passer à : {getStatus(next).label}
-              </button>
-            )}
-          </div>
+          {canUpload && (
+            <div style={workboxStyle}>
+              <div style={{ flex: 1 }}>
+                <p style={boxTitleStyle}>🎨 Création des 3 déclinaisons</p>
+                <p style={boxTextStyle}>
+                  Re-crée le style {getStyle(order.avatar.style).name} à partir de la photo et de l'avatar de référence,
+                  puis dépose les 3 déclinaisons ci-dessous.
+                </p>
+              </div>
+              {status.id === 'recue' && (
+                <button className="btn btn-secondary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={markCreating}>
+                  Marquer en création
+                </button>
+              )}
+              <label style={uploadBtnStyle}>
+                Déposer les 3 déclinaisons
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  style={{ display: 'none' }}
+                  onChange={(e) => { handleVariations(e.target.files); e.target.value = '' }}
+                />
+              </label>
+            </div>
+          )}
+
+          {waitingClient && (
+            <div style={infoStyle}>
+              <p style={{ fontSize: '13px', color: 'var(--yellow)', fontWeight: 600 }}>⏳ En attente de la validation du client</p>
+              <p style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Le client consulte ses 3 déclinaisons et choisit sa préférée. Tu seras notifié dès la validation.</p>
+            </div>
+          )}
 
           <div style={boxStyle}>
-            <p style={boxTitleStyle}>🎨 Les 3 déclinaisons (à déposer ici)</p>
+            <p style={boxTitleStyle}>🎨 Les 3 déclinaisons</p>
             <div style={variationsRowStyle}>
               {[0, 1, 2].map((i) => (
                 <div key={i} style={variationSlotStyle}>
@@ -295,34 +391,43 @@ function OrderCard({ order, open, onToggle, onChanged }) {
                 </div>
               ))}
             </div>
-            <label style={uploadBtnStyle}>
-              Déposer les 3 déclinaisons
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                style={{ display: 'none' }}
-                onChange={(e) => { handleVariations(e.target.files); e.target.value = '' }}
-              />
-            </label>
           </div>
 
-          <div style={actionRowStyle}>
-            <input
-              style={printerInputStyle}
-              value={printerId}
-              onChange={(e) => setPrinterId(e.target.value)}
-              placeholder="Imprimeur partenaire (nom ou id)"
-            />
-            <button className="btn btn-secondary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={handleAssignPrinter}>
-              Assigner
-            </button>
-          </div>
+          {canProduce && (
+            <div style={workboxStyle}>
+              <div style={{ flex: 1, minWidth: '220px' }}>
+                <p style={boxTitleStyle}>🖨️ Imprimeur partenaire</p>
+                <input
+                  style={printerInputStyle}
+                  value={printerId}
+                  onChange={(e) => setPrinterId(e.target.value)}
+                  placeholder="Imprimeur partenaire (nom ou id)"
+                />
+              </div>
+              <button className="btn btn-secondary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={handleAssignPrinter}>
+                Assigner
+              </button>
+            </div>
+          )}
+
+          {status.id === 'recue' && (
+            <div style={actionRowStyle}>
+              <p style={boxTitleStyle}>Statut actuel : {status.label}</p>
+            </div>
+          )}
+          {nextLabel && (
+            <div style={actionRowStyle}>
+              <p style={boxTitleStyle}>Statut actuel : {status.label}</p>
+              <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={handleStatus}>
+                {nextLabel}
+              </button>
+            </div>
+          )}
 
           <div style={boxStyle}>
             <p style={boxTitleStyle}>📜 Timeline</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {order.timeline.map((t, i) => (
+              {(order.timeline || []).map((t, i) => (
                 <p key={i} style={{ fontSize: '12px', color: 'var(--gray-500)' }}>
                   {new Date(t.date).toLocaleString('fr-FR')} — {getStatus(t.status).label} {t.note ? `(${t.note})` : ''}
                 </p>
@@ -335,7 +440,7 @@ function OrderCard({ order, open, onToggle, onChanged }) {
   )
 }
 
-const wrapStyle = { padding: '120px 0 80px', maxWidth: '1000px' }
+const wrapStyle = { padding: '120px 0 80px', maxWidth: '1080px' }
 
 const loginCardStyle = {
   maxWidth: '400px', margin: '0 auto', background: 'var(--black-2)',
@@ -352,18 +457,25 @@ const inputStyle = {
   background: 'var(--black-3)', color: 'var(--white)', fontSize: '15px', outline: 'none', width: '100%',
 }
 
-const headerRowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }
+const headerRowStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }
 
 const titleStyle = { fontFamily: "'Space Grotesk', sans-serif", fontSize: '36px', fontWeight: 700, letterSpacing: '-1px', color: 'var(--white)' }
 
 const subStyle = { fontSize: '14px', color: 'var(--gray-500)' }
 
-const statsRowStyle = { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }
+const tabRowStyle = { display: 'flex', gap: '10px', marginBottom: '24px' }
+
+const tabStyle = {
+  background: 'none', border: '1px solid', padding: '10px 22px', borderRadius: '100px',
+  fontSize: '14px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+}
+
+const statsRowStyle = { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '20px' }
 
 const bannerCardStyle = {
   display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap',
   background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)',
-  borderRadius: '16px', padding: '16px 20px', marginBottom: '24px',
+  borderRadius: '16px', padding: '16px 20px',
 }
 
 const bannerInputStyle = {
@@ -377,11 +489,14 @@ const toggleStyle = {
 }
 
 const statCardStyle = {
-  background: 'var(--black-2)', borderRadius: '16px', padding: '20px',
-  border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+  background: 'var(--black-2)', borderRadius: '16px', padding: '18px', border: '1px solid',
+  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textAlign: 'center',
+  fontFamily: 'inherit',
 }
 
-const statNumStyle = { fontFamily: "'Space Grotesk', sans-serif", fontSize: '28px', fontWeight: 700, color: 'var(--orange)' }
+const statIconStyle = { fontSize: '22px' }
+
+const statNumStyle = { fontFamily: "'Space Grotesk', sans-serif", fontSize: '26px', fontWeight: 700, color: 'var(--orange)' }
 
 const statLabelStyle = { fontSize: '12px', color: 'var(--gray-500)' }
 
@@ -407,6 +522,11 @@ const orderIdStyle = { fontFamily: "'Space Grotesk', sans-serif", fontSize: '20p
 
 const metaStyle = { fontSize: '13px', color: 'var(--gray-500)' }
 
+const queueBadgeStyle = {
+  background: 'rgba(251,191,36,0.12)', color: 'var(--yellow)', padding: '6px 14px',
+  borderRadius: '100px', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap',
+}
+
 const statusBadgeStyle = {
   background: 'rgba(255,107,53,0.12)', color: 'var(--orange)', padding: '6px 14px',
   borderRadius: '100px', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap',
@@ -414,9 +534,21 @@ const statusBadgeStyle = {
 
 const detailStyle = { padding: '0 22px 22px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '18px', paddingTop: '18px' }
 
-const gridRowStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }
+const gridRowStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }
 
 const boxStyle = { background: 'var(--black-3)', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }
+
+const workboxStyle = {
+  display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap',
+  background: 'rgba(255,107,53,0.05)', border: '1px solid rgba(255,107,53,0.2)',
+  borderRadius: '14px', padding: '16px',
+}
+
+const infoStyle = {
+  display: 'flex', flexDirection: 'column', gap: '6px',
+  background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.2)',
+  borderRadius: '14px', padding: '16px',
+}
 
 const boxTitleStyle = { fontSize: '13px', fontWeight: 700, color: 'var(--gray-400)' }
 
@@ -448,6 +580,6 @@ const uploadBtnStyle = {
 }
 
 const printerInputStyle = {
-  flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
+  width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
   background: 'var(--black-3)', color: 'var(--white)', fontSize: '14px', outline: 'none',
 }
