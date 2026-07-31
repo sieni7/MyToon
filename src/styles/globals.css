@@ -108,6 +108,10 @@ a { text-decoration: none; color: inherit; }
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.works-card:hover img {
+  transform: scale(1.05);
+}
+
 /* === FOOTER === */
 .footer-link {
   font-size: 14px;

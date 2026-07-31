@@ -88,6 +88,9 @@ export default function OrderView({ order, full = false, onChanged }) {
             <p style={infoTextStyle}><strong>{order.client.nom}</strong></p>
             <p style={infoTextStyle}>{order.client.telephone}</p>
             <p style={infoTextStyle}>
+              {order.product.name} — Taille {order.options?.size || '—'} • {order.options?.color || '—'}
+            </p>
+            <p style={infoTextStyle}>
               {[order.client.quartier, order.client.ville, order.client.adresse].filter(Boolean).join(', ')}
             </p>
           </div>

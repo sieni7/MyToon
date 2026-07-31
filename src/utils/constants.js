@@ -72,9 +72,17 @@ export const GALLERY_STYLES = STYLES.map((s) => ({
 })).sort((a, b) => Number(b.enabled) - Number(a.enabled))
 
 export const PRODUCTS = [
-  { id: 'tee', name: 'T-shirt coton local', type: 'tee', price: 10000, unit: 'FCFA', desc: 'Coton 100% local, coupe classique. Ton toon imprimé devant.' },
-  { id: 'polo', name: 'Polo coton local', type: 'polo', price: 15000, unit: 'FCFA', desc: 'Coton local, col polo. Ton toon brodé sur la poitrine.' },
+  { id: 'tee', name: 'T-shirt coton local', type: 'tee', price: 10000, unit: 'FCFA', desc: 'Coton 100% local, coupe classique. Ton toon imprimé devant.', sizes: ['S', 'M', 'L', 'XL', 'XXL'], colors: ['Blanc', 'Noir'] },
+  { id: 'polo', name: 'Polo coton local', type: 'polo', price: 15000, unit: 'FCFA', desc: 'Coton local, col polo. Ton toon brodé sur la poitrine.', sizes: ['S', 'M', 'L', 'XL'], colors: ['Blanc', 'Noir'] },
 ]
+
+export const SIZE_GUIDE = {
+  S: { tour: '88-96 cm', note: 'Enfants 12-14 ans / silhouette fine' },
+  M: { tour: '96-104 cm', note: 'Référence homme/adulte' },
+  L: { tour: '104-112 cm', note: 'Silhouette large' },
+  XL: { tour: '112-120 cm', note: 'Grande silhouette' },
+  XXL: { tour: '120-128 cm', note: 'Très grande silhouette' },
+}
 
 export const ORDER_STATUSES = [
   { id: 'recue', label: 'Commande reçue', icon: '📩', desc: 'Nous avons bien reçu ta commande. Préparation de la création.' },

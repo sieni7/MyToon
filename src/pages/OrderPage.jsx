@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ACTIVE_STYLES, ACTIVE_AVATARS, PRODUCTS, formatPrice, getStyle } from '../utils/constants'
+import { ACTIVE_STYLES, ACTIVE_AVATARS, PRODUCTS, SIZE_GUIDE, formatPrice, getStyle } from '../utils/constants'
 import AvatarImage from '../components/common/AvatarImage'
 import UploadArea from '../components/upload/UploadArea'
 import { useImageUpload } from '../hooks/useImageUpload'
 import { compressImage } from '../utils/image'
-import { createOrder } from '../services/orders'
+import { createOrder, getStorageUsage, STORAGE_LIMIT_BYTES } from '../services/orders'
 import { login as sessionLogin } from '../services/session'
 
 const STEP_LABELS = ['Avatar', 'Support', 'Photo & infos']
@@ -15,31 +15,45 @@ export default function OrderPage() {
   const [styleId, setStyleId] = useState(ACTIVE_STYLES[0].id)
   const [avatar, setAvatar] = useState(null)
   const [product, setProduct] = useState(PRODUCTS[0])
+  const [size, setSize] = useState(null)
+  const [color, setColor] = useState(null)
   const [form, setForm] = useState({ nom: '', telephone: '', quartier: '', ville: 'Abidjan', adresse: '' })
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState(null)
   const [order, setOrder] = useState(null)
   const { image, preview, loading: uploadLoading, error: uploadError, handleFile } = useImageUpload()
 
   const avatars = ACTIVE_AVATARS.filter((a) => a.style === styleId)
   const selectedStyle = getStyle(styleId)
 
-  const canGoNext = step === 1 ? !!avatar : step === 2 ? true : !!(image && form.nom && form.telephone)
+  const canGoNext = step === 1 ? !!avatar : step === 2 ? !!(size && color) : !!(image && form.nom && form.telephone)
 
   const handleSubmit = async () => {
     setSubmitting(true)
+    setSubmitError(null)
     try {
       const photoDataUrl = await compressImage(image)
-      const created = createOrder({
+      const estimated = getStorageUsage() + photoDataUrl.length * 2
+      if (estimated > STORAGE_LIMIT_BYTES) {
+        setSubmitError('Ta photo est trop lourde pour être enregistrée sur cet appareil. Choisis une photo plus légère, ou utilise un autre navigateur.')
+        return
+      }
+      const { order: created, saved } = createOrder({
         client: { ...form },
         product: { id: product.id, name: product.name, price: product.price },
         avatar: { id: avatar.id, style: avatar.style, name: avatar.name },
         photoDataUrl,
+        options: { size, color },
       })
+      if (!saved) {
+        setSubmitError("Impossible d'enregistrer ta commande sur cet appareil (stockage plein ou bloqué). Réessaie ou change de navigateur.")
+        return
+      }
       sessionLogin(form.telephone)
       setOrder(created)
       setStep(4)
     } catch (e) {
-      alert('Erreur lors de la création de la commande : ' + e.message)
+      setSubmitError('Erreur lors de la création de la commande : ' + e.message)
     } finally {
       setSubmitting(false)
     }
@@ -53,7 +67,9 @@ export default function OrderPage() {
           <h1 style={successTitleStyle}>Commande <span className="gradient-text">{order.id}</span> reçue !</h1>
           <p style={successTextStyle}>
             Nos artistes créent <strong>3 déclinaisons</strong> de ton toon style <strong>{getStyle(order.avatar.style).name}</strong>{' '}
-            sur ton <strong>{order.product.name}</strong> ({formatPrice(order.product.price)}).
+            sur ton <strong>{order.product.name}</strong>{' '}
+            <strong>{order.options?.size}</strong> {order.options?.color && <strong>{order.options.color}</strong>}{' '}
+            ({formatPrice(order.product.price)}).
           </p>
           <div style={promiseStyle}>
             <span style={{ fontSize: '24px' }}>⏱️</span>
@@ -169,6 +185,51 @@ export default function OrderPage() {
               </button>
             ))}
           </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <p style={optionLabelStyle}>Taille <span style={{ color: 'var(--gray-600)' }}>(guide : S 88-96cm • M 96-104 • L 104-112 • XL 112-120)</span></p>
+              <div style={optionRowStyle}>
+                {product.sizes.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSize(s)}
+                    style={{
+                      ...optionChipStyle,
+                      borderColor: size === s ? 'var(--orange)' : 'rgba(255,255,255,0.1)',
+                      background: size === s ? 'rgba(255,107,53,0.15)' : 'var(--black-3)',
+                      color: size === s ? 'var(--orange)' : 'var(--gray-400)',
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+              {size && SIZE_GUIDE[size] && (
+                <p style={{ fontSize: '12px', color: 'var(--gray-500)' }}>Taille {size} : tour de poitrine {SIZE_GUIDE[size].tour} — {SIZE_GUIDE[size].note}</p>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <p style={optionLabelStyle}>Couleur du support</p>
+              <div style={optionRowStyle}>
+                {product.colors.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setColor(c)}
+                    style={{
+                      ...optionChipStyle,
+                      borderColor: color === c ? 'var(--orange)' : 'rgba(255,255,255,0.1)',
+                      background: color === c ? 'rgba(255,107,53,0.15)' : 'var(--black-3)',
+                      color: color === c ? 'var(--orange)' : 'var(--gray-400)',
+                    }}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
       )}
 
@@ -201,13 +262,73 @@ export default function OrderPage() {
         </section>
       )}
 
+      {step === 3 && (
+        <section style={{ ...sectionStyle, marginTop: '20px' }}>
+          <h2 style={sectionTitleStyle}>Vérifie ta commande</h2>
+          <div style={recapCardStyle}>
+            <div style={recapRowStyle}>
+              <span style={recapIconStyle}>🦸</span>
+              <div style={{ flex: 1 }}>
+                <p style={recapLabelStyle}>Style & avatar</p>
+                <p style={recapValueStyle}>{selectedStyle.name} — {avatar.name}</p>
+              </div>
+              <button style={editBtnStyle} onClick={() => setStep(1)}>Modifier</button>
+            </div>
+            <div style={recapRowStyle}>
+              <span style={recapIconStyle}>{product.type === 'tee' ? '👕' : '👔'}</span>
+              <div style={{ flex: 1 }}>
+                <p style={recapLabelStyle}>Support</p>
+                <p style={recapValueStyle}>{product.name} — Taille {size} • {color}</p>
+              </div>
+              <button style={editBtnStyle} onClick={() => setStep(2)}>Modifier</button>
+            </div>
+            <div style={recapRowStyle}>
+              <span style={recapIconStyle}>💳</span>
+              <div style={{ flex: 1 }}>
+                <p style={recapLabelStyle}>Prix</p>
+                <p style={recapValueStyle}>{formatPrice(product.price)} — paiement à la livraison</p>
+              </div>
+            </div>
+            <div style={recapRowStyle}>
+              <span style={recapIconStyle}>📷</span>
+              <div style={{ flex: 1 }}>
+                <p style={recapLabelStyle}>Photo</p>
+                {preview ? (
+                  <p style={recapValueStyle}>Photo ajoutée ✓</p>
+                ) : (
+                  <p style={{ ...recapValueStyle, color: '#ef4444' }}>Photo manquante</p>
+                )}
+              </div>
+              <button style={editBtnStyle} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Voir</button>
+            </div>
+            <div style={recapRowStyle}>
+              <span style={recapIconStyle}>📍</span>
+              <div style={{ flex: 1 }}>
+                <p style={recapLabelStyle}>Livraison</p>
+                <p style={recapValueStyle}>
+                  {form.nom || '—'} • {form.telephone || '—'}
+                </p>
+                <p style={recapValueStyle}>
+                  {[form.quartier, form.ville, form.adresse].filter(Boolean).join(', ') || 'Adresse incomplète'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       <div style={footerStyle}>
         <div style={{ flex: 1 }}>
+          {submitError && (
+            <p style={{ fontSize: '13px', color: '#ef4444', fontWeight: 600, lineHeight: 1.5 }}>⚠️ {submitError}</p>
+          )}
           {!canGoNext && step < 3 && (
             <p style={{ fontSize: '13px', color: 'var(--gray-500)', fontWeight: 600 }}>
               {step === 1
                 ? '👈 Sélectionne un avatar d\'exemple pour continuer'
-                : '📷 Ajoute ta photo et remplis ton nom + téléphone pour continuer'}
+                : !size || !color
+                  ? '👕 Choisis la taille et la couleur du support pour continuer'
+                  : '📷 Ajoute ta photo et remplis ton nom + téléphone pour continuer'}
             </p>
           )}
         </div>
@@ -274,6 +395,15 @@ const productsGridStyle = {
   display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px',
 }
 
+const optionLabelStyle = { fontSize: '14px', fontWeight: 600, color: 'var(--white)' }
+
+const optionRowStyle = { display: 'flex', gap: '10px', flexWrap: 'wrap' }
+
+const optionChipStyle = {
+  padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: 700,
+  border: '1px solid', cursor: 'pointer', transition: 'all 0.2s',
+}
+
 const productCardStyle = {
   background: 'var(--black-3)', borderRadius: '20px', padding: '28px',
   border: '1px solid', display: 'flex', flexDirection: 'column', gap: '10px',
@@ -292,6 +422,27 @@ const inputStyle = {
 }
 
 const footerStyle = { display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '40px' }
+
+const recapCardStyle = {
+  background: 'var(--black-3)', border: '1px solid rgba(212,175,55,0.2)',
+  borderRadius: '20px', padding: '8px 24px', display: 'flex', flexDirection: 'column',
+}
+
+const recapRowStyle = {
+  display: 'flex', alignItems: 'center', gap: '14px',
+  padding: '16px 0', borderBottom: '1px solid rgba(255,255,255,0.06)',
+}
+
+const recapIconStyle = { fontSize: '24px', width: '40px', height: '40px', borderRadius: '12px', background: 'var(--black-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }
+
+const recapLabelStyle = { fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--gray-600)' }
+
+const recapValueStyle = { fontSize: '14px', color: 'var(--white)', fontWeight: 500 }
+
+const editBtnStyle = {
+  background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--gray-400)',
+  padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+}
 
 const successWrapStyle = { padding: '120px 0 80px', maxWidth: '640px' }
 

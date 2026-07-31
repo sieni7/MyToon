@@ -1,6 +1,8 @@
 const STORAGE_KEY = 'mytoon_orders'
 const COUNTER_KEY = 'mytoon_order_counter'
 
+export const STORAGE_LIMIT_BYTES = 4.5 * 1024 * 1024
+
 function readCounter() {
   try {
     return Number(localStorage.getItem(COUNTER_KEY)) || 0
@@ -20,22 +22,42 @@ function readAll() {
 function writeAll(orders) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
+    return true
   } catch {
-    // stockage indisponible (mode privé) — la commande ne persistera pas
+    return false
+  }
+}
+
+export function getStorageUsage() {
+  try {
+    let bytes = 0
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      bytes += (key.length + (localStorage.getItem(key) || '').length) * 2
+    }
+    return bytes
+  } catch {
+    return 0
   }
 }
 
 function nextId() {
-  const n = readCounter() + 1
+  let n = readCounter() + 1
+  const orders = readAll()
+  let id
+  do {
+    id = `MT-${String(n).padStart(4, '0')}`
+    n++
+  } while (orders.some((o) => o.id === id))
   try {
-    localStorage.setItem(COUNTER_KEY, String(n))
+    localStorage.setItem(COUNTER_KEY, String(n - 1))
   } catch {
     // ignore
   }
-  return `MT-${String(n).padStart(4, '0')}`
+  return id
 }
 
-export function createOrder({ client, product, avatar, photoDataUrl }) {
+export function createOrder({ client, product, avatar, photoDataUrl, options }) {
   const order = {
     id: nextId(),
     createdAt: new Date().toISOString(),
@@ -44,6 +66,7 @@ export function createOrder({ client, product, avatar, photoDataUrl }) {
     product,
     avatar,
     photoDataUrl: photoDataUrl || null,
+    options: options || { size: null, color: null },
     status: 'recue',
     timeline: [{ status: 'recue', date: new Date().toISOString(), note: 'Commande enregistrée' }],
     variations: [],
@@ -52,8 +75,8 @@ export function createOrder({ client, product, avatar, photoDataUrl }) {
   }
   const orders = readAll()
   orders.unshift(order)
-  writeAll(orders)
-  return order
+  const saved = writeAll(orders)
+  return { order, saved }
 }
 
 export function getOrder(id) {
@@ -125,10 +148,12 @@ export function assignPrinter(id, printerId) {
 }
 
 export function createReorder(order) {
-  return createOrder({
+  const { order: created } = createOrder({
     client: { ...order.client },
     product: { ...order.product },
     avatar: { ...order.avatar },
     photoDataUrl: order.photoDataUrl,
+    options: { ...(order.options || {}) },
   })
+  return created
 }

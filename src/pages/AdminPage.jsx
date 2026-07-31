@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ORDER_STATUSES, getStatus, getStyle, formatPrice, ADMIN_PASSCODE } from '../utils/constants'
 import { listOrders, updateStatus, setVariations, assignPrinter } from '../services/orders'
+import { getBanner, setBanner } from '../services/banner'
 
 const NEXT_STATUS = {}
 ORDER_STATUSES.forEach((s, i) => {
@@ -51,9 +52,18 @@ function Dashboard() {
   const [version, setVersion] = useState(0)
   const [filter, setFilter] = useState('all')
   const [expanded, setExpanded] = useState(null)
+  const [banner, setBannerState] = useState(getBanner())
+  const [bannerSaved, setBannerSaved] = useState(false)
   const orders = listOrders()
 
   const refresh = () => setVersion((v) => v + 1)
+
+  const saveBanner = (e) => {
+    e.preventDefault()
+    setBanner(banner)
+    setBannerSaved(true)
+    setTimeout(() => setBannerSaved(false), 2000)
+  }
 
   const filtered = filter === 'all' ? orders : orders.filter((o) => o.status === filter)
 
@@ -75,6 +85,29 @@ function Dashboard() {
           Rafraîchir
         </button>
       </div>
+
+      <form onSubmit={saveBanner} style={bannerCardStyle}>
+        <div style={{ flex: 1, minWidth: '240px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <p style={boxTitleStyle}>⚡ Bandeau promo (affiché sur tout le site)</p>
+          <input
+            style={bannerInputStyle}
+            value={banner.text}
+            onChange={(e) => setBannerState({ ...banner, text: e.target.value })}
+            placeholder="Ex : −10% cette semaine avec le code TOON10"
+          />
+        </div>
+        <label style={toggleStyle}>
+          <input
+            type="checkbox"
+            checked={banner.active}
+            onChange={(e) => setBannerState({ ...banner, active: e.target.checked })}
+          />
+          Actif
+        </label>
+        <button className="btn btn-primary" type="submit" style={{ padding: '12px 24px', fontSize: '13px' }}>
+          {bannerSaved ? '✓ Enregistré' : 'Enregistrer'}
+        </button>
+      </form>
 
       <div className="admin-stats" style={statsRowStyle}>
         <div style={statCardStyle}><span style={statNumStyle}>{stats.all}</span><span style={statLabelStyle}>Total</span></div>
@@ -157,6 +190,9 @@ function OrderCard({ order, open, onToggle, onChanged }) {
               <p style={boxTitleStyle}>👤 Client</p>
               <p style={boxTextStyle}><strong>{order.client.nom}</strong></p>
               <p style={boxTextStyle}>{order.client.telephone}</p>
+              <p style={boxTextStyle}>
+                {order.product.name} — Taille {order.options?.size || '—'} • {order.options?.color || '—'}
+              </p>
               <p style={boxTextStyle}>{[order.client.quartier, order.client.ville, order.client.adresse].filter(Boolean).join(', ')}</p>
             </div>
             <div style={boxStyle}>
@@ -252,6 +288,22 @@ const titleStyle = { fontFamily: "'Space Grotesk', sans-serif", fontSize: '36px'
 const subStyle = { fontSize: '14px', color: 'var(--gray-500)' }
 
 const statsRowStyle = { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }
+
+const bannerCardStyle = {
+  display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap',
+  background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)',
+  borderRadius: '16px', padding: '16px 20px', marginBottom: '24px',
+}
+
+const bannerInputStyle = {
+  flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
+  background: 'var(--black-3)', color: 'var(--white)', fontSize: '14px', outline: 'none',
+}
+
+const toggleStyle = {
+  display: 'inline-flex', alignItems: 'center', gap: '8px',
+  fontSize: '13px', fontWeight: 600, color: 'var(--gray-400)', cursor: 'pointer',
+}
 
 const statCardStyle = {
   background: 'var(--black-2)', borderRadius: '16px', padding: '20px',

@@ -3,6 +3,7 @@ import Hero from '../components/hero/Hero'
 import BeforeAfter from '../components/home/BeforeAfter'
 import Products from '../components/home/Products'
 import Gallery from '../components/gallery/Gallery'
+import WorksGallery from '../components/home/WorksGallery'
 import Features from '../components/features/Features'
 import Phases from '../components/features/Phases'
 import Testimonials from '../components/features/Testimonials'
@@ -18,6 +19,7 @@ export default function HomePage() {
       <BeforeAfter />
       <Features />
       <Products />
+      <WorksGallery />
       <Gallery />
       <Phases />
       <Testimonials />
