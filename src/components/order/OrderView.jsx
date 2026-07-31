@@ -1,13 +1,23 @@
+import { useEffect, useState } from 'react'
 import { getStatus, getStyle, ORDER_STATUSES, formatPrice } from '../../utils/constants'
 import { chooseVariation } from '../../services/orders'
 import SignedImage from '../common/SignedImage'
 
 export default function OrderView({ order, full = false, onChanged }) {
-  const currentIndex = ORDER_STATUSES.findIndex((s) => s.id === order.status)
+  const [status, setStatus] = useState(order.status)
+  const currentIndex = ORDER_STATUSES.findIndex((s) => s.id === status)
+  const [chosenPath, setChosenPath] = useState(order.chosen_variation)
+
+  useEffect(() => {
+    setStatus(order.status)
+    setChosenPath(order.chosen_variation)
+  }, [order.status, order.chosen_variation])
 
   const handleChoose = async (idx) => {
     try {
       await chooseVariation(order.code, idx)
+      setChosenPath(order.variations[idx])
+      setStatus('validee')
     } catch (e) {
       alert(e.message)
     }
@@ -24,22 +34,22 @@ export default function OrderView({ order, full = false, onChanged }) {
           </p>
         </div>
         <div style={statusBadgeStyle}>
-          {getStatus(order.status).icon} {getStatus(order.status).label}
+          {getStatus(status).icon} {getStatus(status).label}
         </div>
       </div>
 
       <div style={timelineStyle}>
-        {ORDER_STATUSES.map((status, i) => {
-          const done = i < currentIndex || order.status === status.id
+        {ORDER_STATUSES.map((statusItem, i) => {
+          const done = i < currentIndex || status === statusItem.id
           const active = i === currentIndex
           return (
-            <div key={status.id} style={timelineItemStyle}>
+            <div key={statusItem.id} style={timelineItemStyle}>
               <div style={timelineLeftStyle}>
                 <div style={{
                   ...timelineDotStyle,
                   background: done ? 'var(--orange)' : active ? 'var(--yellow)' : 'var(--black-3)',
                 }}>
-                  {done ? (active ? status.icon : '✓') : status.icon}
+                  {done ? (active ? statusItem.icon : '✓') : statusItem.icon}
                 </div>
                 {i < ORDER_STATUSES.length - 1 && (
                   <div style={{ ...timelineLineStyle, background: i < currentIndex ? 'var(--orange)' : 'rgba(255,255,255,0.08)' }} />
@@ -47,21 +57,21 @@ export default function OrderView({ order, full = false, onChanged }) {
               </div>
               <div style={timelineContentStyle}>
                 <p style={{ ...timelineLabelStyle, color: done ? 'var(--white)' : 'var(--gray-500)' }}>
-                  {status.label}
+                  {statusItem.label}
                 </p>
-                {active && <p style={timelineDescStyle}>{status.desc}</p>}
+                {active && <p style={timelineDescStyle}>{statusItem.desc}</p>}
               </div>
             </div>
           )
         })}
       </div>
 
-      {full && (order.status === 'propositions_pretes' || order.status === 'validation_attente' || order.status === 'validee') && (
+      {full && (status === 'propositions_pretes' || status === 'validation_attente' || status === 'validee') && (
         <div style={variationsSectionStyle}>
           <h3 style={variationsTitleStyle}>Tes 3 déclinaisons — choisis ta préférée</h3>
           <div className="variations-grid" style={variationsGridStyle}>
             {order.variations.map((variation, i) => {
-              const isChosen = order.chosen_variation === variation
+              const isChosen = chosenPath === variation
               return (
                 <div key={i} style={{ ...variationCardStyle, borderColor: isChosen ? 'var(--yellow)' : 'rgba(255,255,255,0.08)' }}>
                   <SignedImage path={variation} style={variationImgStyle} alt={`Déclinaison ${i + 1}`} />
@@ -69,7 +79,7 @@ export default function OrderView({ order, full = false, onChanged }) {
                   {isChosen ? (
                     <span style={chosenBadgeStyle}>✓ Choisie</span>
                   ) : (
-                    order.status !== 'validee' && (
+                    status !== 'validee' && (
                       <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px', width: '100%' }} onClick={() => handleChoose(i)}>
                         Choisir celle-ci
                       </button>

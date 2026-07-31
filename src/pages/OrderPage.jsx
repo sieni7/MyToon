@@ -53,7 +53,7 @@ export default function OrderPage() {
       <div className="container" style={successWrapStyle}>
         <div style={successCardStyle}>
           <div style={successIconStyle}>⚡</div>
-          <h1 style={successTitleStyle}>Commande <span className="gradient-text">{order.id}</span> reçue !</h1>
+          <h1 style={successTitleStyle}>Commande <span className="gradient-text">{order.code}</span> reçue !</h1>
           <p style={successTextStyle}>
             Nos artistes créent <strong>3 déclinaisons</strong> de ton toon style <strong>{getStyle(order.avatar.style).name}</strong>{' '}
             sur ton <strong>{order.product.name}</strong>{' '}
@@ -70,7 +70,7 @@ export default function OrderPage() {
           <div style={stepsCardStyle}>
             <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--gold)', textAlign: 'left', width: '100%' }}>Ce qui va se passer</p>
             <div style={stepLineStyle}><span style={stepNumStyle}>1</span> Nous créons tes 3 déclinaisons (≈ 1h)</div>
-            <div style={stepLineStyle}><span style={stepNumStyle}>2</span> Reviens ici avec ton numéro <strong>{order.id}</strong> pour les voir et choisir ta préférée</div>
+            <div style={stepLineStyle}><span style={stepNumStyle}>2</span> Reviens ici avec ton numéro <strong>{order.code}</strong> pour les voir et choisir ta préférée</div>
             <div style={stepLineStyle}><span style={stepNumStyle}>3</span> On imprime et on livre en 24-48h</div>
           </div>
           <p style={hintStyle}>
