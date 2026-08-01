@@ -31,7 +31,7 @@ export default function Footer() {
             <span style={{ color: 'var(--orange)' }}>M</span>y<span style={{ color: 'var(--orange)' }}>T</span>oon
           </Link>
           <p style={taglineStyle}>
-            <em>"Fièrement conçu à Abidjan, trempé dans l'énergie du macadam."</em>
+            <em>"Né à Abidjan, taillé pour les héros."</em>
           </p>
           <div style={socialStyle}>
             <a href="https://wa.me/2250545298280" target="_blank" rel="noopener noreferrer" className="footer-social" aria-label="WhatsApp">💬</a>

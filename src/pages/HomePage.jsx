@@ -10,6 +10,7 @@ import Phases from '../components/features/Phases'
 import Testimonials from '../components/features/Testimonials'
 import FAQ from '../components/features/FAQ'
 import CTA from '../components/cta/CTA'
+import SectionDivider from '../components/layout/SectionDivider'
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -18,14 +19,23 @@ export default function HomePage() {
     <>
       <Hero onCtaClick={() => navigate('/commande')} />
       <LiveTicker />
+      <SectionDivider />
       <BeforeAfter />
+      <SectionDivider />
       <Features />
+      <SectionDivider />
       <Products />
+      <SectionDivider />
       <WorksGallery />
+      <SectionDivider />
       <Gallery />
+      <SectionDivider />
       <Phases />
+      <SectionDivider />
       <Testimonials />
+      <SectionDivider />
       <FAQ />
+      <SectionDivider />
       <CTA />
     </>
   )

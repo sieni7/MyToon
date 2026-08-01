@@ -41,7 +41,7 @@ export default function Hero({ onCtaClick }) {
           <div style={contentStyle}>
             <div style={tagStyle}>
               <span style={dotStyle} />
-              Ta photo → ton héros sur t-shirt, en 1h ⚡
+              Ta photo → ton avatar → ton tee shirt
             </div>
 
             <h1 className="hero-title" style={titleStyle}>
