@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import Hero from '../components/hero/Hero'
+import LiveTicker from '../components/home/LiveTicker'
 import BeforeAfter from '../components/home/BeforeAfter'
 import Products from '../components/home/Products'
 import Gallery from '../components/gallery/Gallery'
@@ -16,6 +17,7 @@ export default function HomePage() {
   return (
     <>
       <Hero onCtaClick={() => navigate('/commande')} />
+      <LiveTicker />
       <BeforeAfter />
       <Features />
       <Products />

@@ -91,6 +91,12 @@ export async function getOrderStats() {
   return data || null
 }
 
+export async function getRecentFeed() {
+  if (!supabase) return []
+  const { data } = await supabase.rpc('recent_feed')
+  return Array.isArray(data) ? data : []
+}
+
 export async function isAdmin() {
   const user = await getCurrentUser()
   if (!user) return false
