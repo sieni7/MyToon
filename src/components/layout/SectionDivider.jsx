@@ -6,7 +6,7 @@ export default function SectionDivider() {
   )
 }
 
-const wrapperStyle = { paddingTop: '36px', paddingBottom: '36px' }
+const wrapperStyle = { paddingTop: '20px', paddingBottom: '20px' }
 
 const lineStyle = {
   width: '100%',
