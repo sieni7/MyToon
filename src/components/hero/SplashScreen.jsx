@@ -1,49 +1,28 @@
 import { useEffect, useState } from 'react'
 
 export default function SplashScreen({ onFinish }) {
-  const [phase, setPhase] = useState('lightning')
+  const [leaving, setLeaving] = useState(false)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('text'), 600)
-    const t2 = setTimeout(() => setPhase('done'), 2800)
-    const t3 = setTimeout(() => onFinish(), 3600)
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+    const t1 = setTimeout(() => setLeaving(true), 1400)
+    const t2 = setTimeout(() => onFinish(), 1900)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [onFinish])
 
   return (
-    <div style={splashStyle}>
-      {phase === 'lightning' && (
-        <div style={lightningContainerStyle}>
-          <div style={lightningStyle} />
-        </div>
-      )}
-
-      {(phase === 'text' || phase === 'done') && (
-        <div style={textContainerStyle}>
-          <p style={sublineStyle}>ABIDJAN STREET WEAR</p>
-          <h1 style={heroTextStyle}>
-            {phase === 'text' ? (
-              <span style={typewriterWrapStyle}>
-                <span style={typewriterStyle}>
-                  Le super héros,<br />c'est toi.
-                </span>
-              </span>
-            ) : (
-              <span style={heroRevealStyle}>
-                Le super héros,<br />c'est toi.
-              </span>
-            )}
-          </h1>
-          {phase === 'done' && (
-            <p style={fadeInSubStyle}>Une photo. 3 déclinaisons en 1h. Sur ton t-shirt en 48h.</p>
-          )}
-        </div>
-      )}
-
-      <div style={cornerTLStyle} />
-      <div style={cornerTRStyle} />
-      <div style={cornerBLStyle} />
-      <div style={cornerBRStyle} />
+    <div data-testid="splash" style={{ ...splashStyle, opacity: leaving ? 0 : 1 }}>
+      <div style={innerStyle}>
+        <p style={{ ...sublineStyle, animation: 'count-up 0.5s ease-out 0s both' }}>
+          ABIDJAN STREET WEAR
+        </p>
+        <h1 style={{ ...logoStyle, animation: 'count-up 0.5s ease-out 0.12s both' }}>
+          <span style={accentStyle}>M</span>y<span style={accentStyle}>T</span>oon
+        </h1>
+        <div style={{ ...ruleStyle, animation: 'count-up 0.5s ease-out 0.24s both' }} />
+        <p style={{ ...taglineStyle, animation: 'count-up 0.5s ease-out 0.34s both' }}>
+          Envoie une photo, reçois un <span style={{ color: 'var(--orange)' }}>héros à porter</span>.
+        </p>
+      </div>
     </div>
   )
 }
@@ -57,99 +36,45 @@ const splashStyle = {
   alignItems: 'center',
   justifyContent: 'center',
   overflow: 'hidden',
+  transition: 'opacity 0.45s ease',
 }
 
-const lightningContainerStyle = {
-  position: 'absolute',
-  inset: 0,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}
-
-const lightningStyle = {
-  width: '4px',
-  height: '100vh',
-  background: 'linear-gradient(180deg, transparent, var(--orange), var(--yellow), var(--orange), transparent)',
-  animation: 'lightning-flash 0.6s ease-out',
-  boxShadow: '0 0 100px rgba(255,107,53,0.8), 0 0 200px rgba(251,191,36,0.4)',
-}
-
-const textContainerStyle = {
+const innerStyle = {
   textAlign: 'center',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: '16px',
-  animation: 'reveal 0.8s ease-out',
+  gap: '20px',
 }
 
 const sublineStyle = {
-  fontSize: '13px',
+  fontSize: '12px',
   fontWeight: 600,
   color: 'var(--orange)',
-  letterSpacing: '4px',
-  marginBottom: '8px',
+  letterSpacing: '5px',
 }
 
-const heroTextStyle = {
+const logoStyle = {
   fontFamily: "'Space Grotesk', sans-serif",
-  fontSize: '56px',
-  fontWeight: 900,
-  lineHeight: 1.1,
+  fontSize: '72px',
+  fontWeight: 700,
   letterSpacing: '-2px',
+  lineHeight: 1,
   color: 'var(--white)',
+  margin: 0,
 }
 
-const typewriterWrapStyle = {
-  display: 'inline-block',
-  overflow: 'hidden',
-  whiteSpace: 'nowrap',
+const accentStyle = { color: 'var(--orange)' }
+
+const ruleStyle = {
+  width: '48px',
+  height: '2px',
+  background: 'linear-gradient(90deg, transparent, var(--orange), transparent)',
 }
 
-const typewriterStyle = {
-  display: 'inline-block',
-  overflow: 'hidden',
-  whiteSpace: 'nowrap',
-  animation: 'typewriter 1.5s steps(25) forwards',
-  borderRight: '3px solid var(--orange)',
-}
-
-const heroRevealStyle = {
-  animation: 'count-up 0.5s ease-out forwards',
-}
-
-const fadeInSubStyle = {
-  fontSize: '18px',
+const taglineStyle = {
+  fontSize: '16px',
   color: 'var(--gray-500)',
-  animation: 'slide-up 0.6s ease-out forwards',
-  opacity: 0,
-}
-
-const cornerTLStyle = {
-  position: 'absolute', top: 0, left: 0,
-  width: '80px', height: '80px',
-  borderTop: '2px solid rgba(255,107,53,0.15)',
-  borderLeft: '2px solid rgba(255,107,53,0.15)',
-}
-
-const cornerTRStyle = {
-  position: 'absolute', top: 0, right: 0,
-  width: '80px', height: '80px',
-  borderTop: '2px solid rgba(255,107,53,0.15)',
-  borderRight: '2px solid rgba(255,107,53,0.15)',
-}
-
-const cornerBLStyle = {
-  position: 'absolute', bottom: 0, left: 0,
-  width: '80px', height: '80px',
-  borderBottom: '2px solid rgba(255,107,53,0.15)',
-  borderLeft: '2px solid rgba(255,107,53,0.15)',
-}
-
-const cornerBRStyle = {
-  position: 'absolute', bottom: 0, right: 0,
-  width: '80px', height: '80px',
-  borderBottom: '2px solid rgba(255,107,53,0.15)',
-  borderRight: '2px solid rgba(255,107,53,0.15)',
+  margin: 0,
+  maxWidth: '420px',
 }

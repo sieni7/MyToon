@@ -21,10 +21,19 @@ function ScrollToTop() {
 }
 
 export default function App() {
-  const [splashDone, setSplashDone] = useState(false)
+  const [splashDone, setSplashDone] = useState(() => {
+    try { return sessionStorage.getItem('mytoon_splash_seen') === '1' } catch { return false }
+  })
 
   if (!splashDone) {
-    return <SplashScreen onFinish={() => setSplashDone(true)} />
+    return (
+      <SplashScreen
+        onFinish={() => {
+          try { sessionStorage.setItem('mytoon_splash_seen', '1') } catch { /* ignore */ }
+          setSplashDone(true)
+        }}
+      />
+    )
   }
 
   return (
