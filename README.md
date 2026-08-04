@@ -45,8 +45,6 @@ src/
 supabase/
 └── migrations/        # 0001_init … 0005_recent_feed
 ui-test.mjs            # Test Playwright du flux complet (15 checks)
-hero-check.mjs         # Test du hero
-ticker-check.mjs       # Test du ticker
 ```
 
 ## 🚀 Démarrage rapide
@@ -95,8 +93,6 @@ Tests Playwright (Chromium requis : `npx playwright install chromium` puis lance
 ```bash
 npm run dev &
 node ui-test.mjs        # Flux complet client + admin (15 checks)
-node hero-check.mjs     # Hero, mockup, carrousel, redirection
-node ticker-check.mjs   # Ticker « En direct »
 ```
 
 ## 🌍 Déploiement
