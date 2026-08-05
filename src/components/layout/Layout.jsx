@@ -1,8 +1,12 @@
+import { useLocation } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
 import PromoBanner from './PromoBanner'
 
 export default function Layout({ children }) {
+  const { pathname } = useLocation()
+  const hideFooter = pathname.startsWith('/admin')
+
   return (
     <>
       <Header />
@@ -10,7 +14,7 @@ export default function Layout({ children }) {
       <main style={{ paddingTop: '72px' }}>
         {children}
       </main>
-      <Footer />
+      {!hideFooter && <Footer />}
     </>
   )
 }
