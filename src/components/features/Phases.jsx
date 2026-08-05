@@ -1,4 +1,4 @@
-import { PHASES } from '../../utils/constants'
+import { JOURNEY } from '../../utils/constants'
 
 export default function Phases() {
   return (
@@ -9,23 +9,20 @@ export default function Phases() {
             Ton parcours de <span className="gradient-text">héros</span>
           </h2>
           <p style={subStyle}>
-            3 phases. Une transformation. De la photo à ton alter ego.
+            6 étapes. De la photo à ton alter ego, jusqu'au tee-shirt livré.
           </p>
         </div>
 
         <div style={timelineStyle}>
-          {PHASES.map((phase, i) => (
-            <div key={i} style={phaseCardStyle}>
-              <div style={phaseNumStyle}>{phase.num}</div>
-              <div style={phaseIconStyle}>{phase.icon}</div>
-              <h3 style={phaseNameStyle}>{phase.name}</h3>
-              <p style={phaseDescStyle}>{phase.desc}</p>
-              <div style={phaseStepsStyle}>
-                {phase.steps.map((step, j) => (
-                  <span key={j} style={stepChipStyle}>{step}</span>
-                ))}
+          {JOURNEY.map((step, i) => (
+            <div key={step.num} style={stepCardStyle}>
+              <div style={badgeWrapStyle}>
+                <div style={badgeStyle}>{step.num}</div>
+                {i < JOURNEY.length - 1 && <div style={connectorStyle} />}
               </div>
-              {i < PHASES.length - 1 && <div style={connectorStyle} />}
+              <div style={stepIconStyle}>{step.icon}</div>
+              <h3 style={stepNameStyle}>{step.title}</h3>
+              <p style={stepDescStyle}>{step.desc}</p>
             </div>
           ))}
         </div>
@@ -48,44 +45,45 @@ const titleStyle = {
 const subStyle = { fontSize: '16px', color: 'var(--gray-500)' }
 
 const timelineStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: '24px',
-  position: 'relative',
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  gap: '28px',
 }
 
-const phaseCardStyle = {
+const stepCardStyle = {
+  position: 'relative',
+  width: '300px',
   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
   padding: '36px 24px', background: 'var(--black-3)',
   borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)',
-  position: 'relative', textAlign: 'center',
+  textAlign: 'center',
 }
 
-const phaseNumStyle = {
+const badgeWrapStyle = { position: 'relative', marginBottom: '8px' }
+
+const badgeStyle = {
+  width: '48px', height: '48px', borderRadius: '50%',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
   fontFamily: "'Space Grotesk', sans-serif",
-  fontSize: '48px', fontWeight: 900,
-  color: 'rgba(255,107,53,0.1)',
-  position: 'absolute', top: '12px', right: '16px',
-  lineHeight: 1,
-}
-
-const phaseIconStyle = { fontSize: '40px' }
-
-const phaseNameStyle = {
-  fontFamily: "'Space Grotesk', sans-serif",
-  fontSize: '22px', fontWeight: 700, color: 'var(--white)',
-}
-
-const phaseDescStyle = { fontSize: '13px', color: 'var(--gray-500)', lineHeight: 1.6 }
-
-const phaseStepsStyle = { display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', marginTop: '4px' }
-
-const stepChipStyle = {
-  fontSize: '11px', fontWeight: 600, color: 'var(--orange)',
-  background: 'rgba(255,107,53,0.1)', padding: '4px 12px',
-  borderRadius: '100px',
+  fontSize: '20px', fontWeight: 800, color: 'var(--white)',
+  background: 'linear-gradient(135deg, var(--orange), #ff8a3d)',
+  boxShadow: '0 8px 24px rgba(255,107,53,0.35)',
 }
 
 const connectorStyle = {
-  display: 'none',
+  position: 'absolute',
+  top: '23px',
+  left: '48px',
+  width: '28px',
+  borderTop: '2px dashed rgba(255,107,53,0.4)',
 }
+
+const stepIconStyle = { fontSize: '34px', lineHeight: 1 }
+
+const stepNameStyle = {
+  fontFamily: "'Space Grotesk', sans-serif",
+  fontSize: '20px', fontWeight: 700, color: 'var(--white)',
+}
+
+const stepDescStyle = { fontSize: '13px', color: 'var(--gray-500)', lineHeight: 1.6 }

@@ -3,6 +3,7 @@ import { ORDER_STATUSES, getStatus, getStyle, formatPrice, priceWithPromo, AVATA
 import { listOrders, updateStatus, setVariations, assignPrinter, isAdmin } from '../services/orders'
 import { getBanner, setBanner } from '../services/banner'
 import { listCampaigns, createCampaign, updateCampaign, deleteCampaign } from '../services/campaigns'
+import { generatePrintPdf, getPrintPdfUrl, downloadPrintPdf } from '../services/print'
 import { signInAdmin, signOut } from '../lib/supabase'
 import SignedImage from '../components/common/SignedImage'
 import AvatarImage from '../components/common/AvatarImage'
@@ -420,6 +421,10 @@ function OrderCard({ order, queue, open, onToggle, onChanged }) {
             </div>
           )}
 
+          {order.chosen_variation && (
+            <PrintBlock code={order.code} hasPdf={!!order.print_pdf_path} onChanged={onChanged} />
+          )}
+
           {status.id === 'recue' && (
             <div style={actionRowStyle}>
               <p style={boxTitleStyle}>Statut actuel : {status.label}</p>
@@ -444,6 +449,74 @@ function OrderCard({ order, queue, open, onToggle, onChanged }) {
               ))}
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PrintBlock({ code, hasPdf, onChanged }) {
+  const [busy, setBusy] = useState(false)
+  const [ready, setReady] = useState(hasPdf)
+  const [error, setError] = useState(null)
+  const [copied, setCopied] = useState(false)
+
+  const handleGenerate = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      await generatePrintPdf(code)
+      setReady(true)
+      if (onChanged) onChanged()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleDownload = async () => {
+    try { await downloadPrintPdf(code) } catch (e) { setError(e.message) }
+  }
+
+  const handleCopyLink = async () => {
+    const url = await getPrintPdfUrl(code)
+    if (!url) { setError('PDF introuvable'); return }
+    await navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleWhatsApp = async () => {
+    const url = await getPrintPdfUrl(code)
+    if (!url) { setError('PDF introuvable'); return }
+    window.open(`https://wa.me/?text=${encodeURIComponent(`Dossier d'impression MyToon ${code} — ${url}`)}`, '_blank')
+  }
+
+  return (
+    <div style={printBoxStyle}>
+      <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <p style={boxTitleStyle}>🖨️ Fichier d'impression (PDF A4 / DTF)</p>
+        <p style={boxTextStyle}>
+          Convertit la déclinaison validée en PDF A4 prêt pour l'imprimeur. Dépose une image haute résolution pour un rendu DTF net.
+        </p>
+        {error && <p style={{ fontSize: '12px', color: '#ef4444', fontWeight: 600 }}>⚠️ {error}</p>}
+      </div>
+      {!ready ? (
+        <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }} onClick={handleGenerate} disabled={busy}>
+          {busy ? 'Génération…' : 'Générer le PDF A4'}
+        </button>
+      ) : (
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button className="btn btn-primary" style={{ padding: '10px 16px', fontSize: '12px' }} onClick={handleDownload}>
+            📄 Télécharger
+          </button>
+          <button className="btn btn-secondary" style={{ padding: '10px 16px', fontSize: '12px' }} onClick={handleCopyLink}>
+            {copied ? '✓ Copié' : 'Copier le lien'}
+          </button>
+          <button className="btn btn-secondary" style={{ padding: '10px 16px', fontSize: '12px' }} onClick={handleWhatsApp}>
+            💬 Envoyer à l'imprimeur
+          </button>
         </div>
       )}
     </div>
@@ -785,6 +858,12 @@ const uploadBtnStyle = {
 const printerInputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
   background: 'var(--black-3)', color: 'var(--white)', fontSize: '14px', outline: 'none',
+}
+
+const printBoxStyle = {
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap',
+  background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.22)',
+  borderRadius: '14px', padding: '16px',
 }
 
 const campaignCardStyle = {

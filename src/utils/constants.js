@@ -95,21 +95,30 @@ export const ORDER_STATUSES = [
   { id: 'livree', label: 'Livrée', icon: '📦', desc: 'Commande livrée. Profite de ton héros !' },
 ]
 
-export const PHASES = [
+export const JOURNEY = [
   {
-    num: '1', name: 'Le Choix', icon: '🦸',
-    steps: ['Avatar', 'Support'],
-    desc: 'Choisis ton style toon et ton support (T-shirt 10 000 F ou Polo 15 000 F).',
+    num: '1', icon: '👕', title: 'Choisis',
+    desc: 'Ton style toon (Manga, Comics, Pop Art…) et ton support : t-shirt 10 000 F ou polo 15 000 F.',
   },
   {
-    num: '2', name: 'L\'Incarnation', icon: '⚡',
-    steps: ['Photo', '1h chrono', '3 déclinaisons'],
-    desc: 'Envoie ta photo. Nos artistes créent 3 déclinaisons de ton toon en 1 heure.',
+    num: '2', icon: '📷', title: 'Envoie ta photo',
+    desc: 'Une photo nette de ton visage + tes infos de livraison. Paiement à la livraison.',
   },
   {
-    num: '3', name: 'La Concrétisation', icon: '👕',
-    steps: ['Validation', 'Impression', '24-48h'],
-    desc: 'Tu valides ta préférée. Impression et livraison en 24-48h, suivi en temps réel.',
+    num: '3', icon: '🎨', title: 'Création (1h)',
+    desc: 'Le graphiste reçoit ta photo dans son dashboard et crée tes 3 déclinaisons toon en 1 heure.',
+  },
+  {
+    num: '4', icon: '✅', title: 'Tu valides',
+    desc: 'Tu découvres tes 3 propositions et tu choisis ta déclinaison préférée.',
+  },
+  {
+    num: '5', icon: '📄', title: 'Fichier d\'impression',
+    desc: 'La déclinaison validée est convertie en PDF A4 et transmise à l\'imprimeur (impression DTF haute qualité).',
+  },
+  {
+    num: '6', icon: '🚚', title: 'Livraison (24-48h)',
+    desc: 'Ton tee-shirt est imprimé et livré en 24-48h, avec suivi en direct grâce à ton code MT-XXXX.',
   },
 ]
 
