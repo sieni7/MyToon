@@ -88,7 +88,6 @@ export const ORDER_STATUSES = [
   { id: 'recue', label: 'Commande reçue', icon: '📩', desc: 'Nous avons bien reçu ta commande. Préparation de la création.' },
   { id: 'en_creation', label: 'Création du toon', icon: '🎨', desc: 'Ton toon est en cours de création : 3 déclinaisons du style choisi en 1 heure chrono.' },
   { id: 'propositions_pretes', label: '3 propositions prêtes', icon: '✨', desc: 'Tes 3 déclinaisons sont prêtes. Choisis celle que tu préfères.' },
-  { id: 'validation_attente', label: 'En attente de ta validation', icon: '⏳', desc: 'Confirme ta déclinaison pour lancer l\'impression.' },
   { id: 'validee', label: 'Validée', icon: '✅', desc: 'Déclinaison validée. Attribution à l\'imprimeur partenaire.' },
   { id: 'en_impression', label: 'En impression', icon: '🖨️', desc: 'Impression en cours. Livraison sous 24-48h.' },
   { id: 'expediee', label: 'Expédiée', icon: '🚚', desc: 'Ton tee-shirt est en route vers ton adresse.' },
@@ -136,8 +135,6 @@ export const FAQ = [
   { q: 'Comment payer ?', a: 'Wave, Orange Money et Mobile Money. Paiement 100% sécurisé.' },
   { q: 'Puis-je suivre ma commande ?', a: 'Oui. Tu reçois un numéro de suivi (ex: MT-0001) que tu peux consulter à tout moment sur la page Suivi pour voir l\'évolution de ta commande.' },
 ]
-
-export const ADMIN_PASSCODE = 'mytoon2026'
 
 export function formatPrice(price) {
   return `${Number(price).toLocaleString('fr-FR')} FCFA`

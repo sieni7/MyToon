@@ -7,19 +7,32 @@ import { getStatus, getStyle, formatPrice } from '../utils/constants'
 export default function MesCommandesPage() {
   const [loading, setLoading] = useState(true)
   const [orders, setOrders] = useState([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(0)
+  const PAGE_SIZE = 50
 
   useEffect(() => {
     let active = true
     ;(async () => {
       await ensureLoggedIn()
-      const list = await listMyOrders()
+      const { orders: list, total: count } = await listMyOrders(0, PAGE_SIZE)
       if (active) {
         setOrders(list)
+        setTotal(count)
         setLoading(false)
       }
     })()
     return () => { active = false }
   }, [])
+
+  const loadMore = async () => {
+    const next = page + 1
+    const { orders: more } = await listMyOrders(next, PAGE_SIZE)
+    setOrders((prev) => [...prev, ...more])
+    setPage(next)
+  }
+
+  const remaining = total - orders.length
 
   if (loading) {
     return (
@@ -70,6 +83,14 @@ export default function MesCommandesPage() {
           )
         })}
       </div>
+
+      {remaining > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+          <button className="btn btn-secondary" style={{ padding: '12px 28px' }} onClick={loadMore}>
+            Charger plus ({remaining})
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -9,10 +9,10 @@ import SignedImage from '../components/common/SignedImage'
 import AvatarImage from '../components/common/AvatarImage'
 
 const QUEUES = [
-  { id: 'to_do', label: 'À traiter', icon: '🆕', statuses: ['recue'], hint: 'Nouvelles commandes — crée les 3 déclinaisons' },
-  { id: 'creating', label: 'En création', icon: '🎨', statuses: ['en_creation'], hint: 'Création des 3 déclinaisons (1h chrono)' },
-  { id: 'validation', label: 'En validation client', icon: '⏳', statuses: ['propositions_pretes', 'validation_attente'], hint: 'Le client choisit sa déclinaison' },
-  { id: 'production', label: 'À produire / Livraison', icon: '🖨️', statuses: ['validee', 'en_impression', 'expediee', 'livree'], hint: 'Impression, imprimeur, livraison' },
+  { id: 'to_do', label: 'À traiter', icon: '🆕', statuses: ['recue'] },
+  { id: 'creating', label: 'En création', icon: '🎨', statuses: ['en_creation'] },
+  { id: 'validation', label: 'En validation client', icon: '⏳', statuses: ['propositions_pretes'] },
+  { id: 'production', label: 'À produire / Livraison', icon: '🖨️', statuses: ['validee', 'en_impression', 'expediee', 'livree'] },
 ]
 
 export default function AdminPage() {
@@ -248,29 +248,32 @@ function Dashboard({ onLogout }) {
 
 function OrderCard({ order, queue, open, onToggle, onChanged }) {
   const [printerId, setPrinterId] = useState(order.printer_id || '')
+  const [error, setError] = useState(null)
   const status = getStatus(order.status)
   const avatar = AVATARS.find((a) => a.id === order.avatar?.id)
-  const waitingClient = ['propositions_pretes', 'validation_attente'].includes(order.status)
+  const waitingClient = ['propositions_pretes'].includes(order.status)
   const canProduce = ['validee', 'en_impression', 'expediee'].includes(order.status)
   const canUpload = ['recue', 'en_creation'].includes(order.status)
 
   const handleVariations = async (files) => {
     const valid = [...files].filter((f) => f && f.type.startsWith('image/')).slice(0, 3)
     if (valid.length === 0) return
+    setError(null)
     try {
       await setVariations(order.code, valid)
       onChanged()
     } catch (e) {
-      alert(e.message)
+      setError(e.message)
     }
   }
 
   const markCreating = async () => {
+    setError(null)
     try {
       await updateStatus(order.code, 'en_creation', 'Création commencée')
       onChanged()
     } catch (e) {
-      alert(e.message)
+      setError(e.message)
     }
   }
 
@@ -283,20 +286,22 @@ function OrderCard({ order, queue, open, onToggle, onChanged }) {
           ? 'livree'
           : null
     if (!next) return
+    setError(null)
     try {
       await updateStatus(order.code, next)
       onChanged()
     } catch (e) {
-      alert(e.message)
+      setError(e.message)
     }
   }
 
   const handleAssignPrinter = async () => {
+    setError(null)
     try {
       await assignPrinter(order.code, printerId.trim())
       onChanged()
     } catch (e) {
-      alert(e.message)
+      setError(e.message)
     }
   }
 
@@ -328,6 +333,9 @@ function OrderCard({ order, queue, open, onToggle, onChanged }) {
 
       {open && (
         <div style={detailStyle}>
+          {error && (
+            <p style={{ fontSize: '13px', color: '#ef4444', fontWeight: 600 }}>⚠️ {error}</p>
+          )}
           <div className="admin-grid-row" style={gridRowStyle}>
             <div style={boxStyle}>
               <p style={boxTitleStyle}>👤 Client</p>

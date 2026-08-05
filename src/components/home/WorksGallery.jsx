@@ -1,23 +1,33 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { STYLES } from '../../utils/constants'
 
-const worksMap = import.meta.glob('../../assets/works/*.{jpg,jpeg,png,webp}', { eager: true, query: '?url', import: 'default' })
+const worksMap = import.meta.glob('../../assets/works/*.{jpg,jpeg,png,webp}', { query: '?url', import: 'default' })
 
-const WORKS = Object.entries(worksMap)
-  .map(([path, src]) => {
-    const file = path.split('/').pop().replace(/\.(jpg|jpeg|png|webp)$/i, '')
-    const lower = file.toLowerCase()
-    const style = STYLES.find((s) => lower.includes(s.id) || lower.includes(s.name.toLowerCase())) || null
-    return {
-      src,
-      name: file.replace(/[-_]/g, ' '),
-      styleName: style ? style.name : null,
-    }
-  })
-  .sort((a, b) => a.name.localeCompare(b.name))
+const decorate = async ([path, loader]) => {
+  const src = await loader()
+  const file = path.split('/').pop().replace(/\.(jpg|jpeg|png|webp)$/i, '')
+  const lower = file.toLowerCase()
+  const style = STYLES.find((s) => lower.includes(s.id) || lower.includes(s.name.toLowerCase())) || null
+  return {
+    src,
+    name: file.replace(/[-_]/g, ' '),
+    styleName: style ? style.name : null,
+  }
+}
 
 export default function WorksGallery() {
-  if (WORKS.length === 0) return null
+  const [works, setWorks] = useState([])
+
+  useEffect(() => {
+    let active = true
+    Promise.all(Object.entries(worksMap).map(decorate))
+      .then((list) => { if (active) setWorks(list.sort((a, b) => a.name.localeCompare(b.name))) })
+      .catch(() => { if (active) setWorks([]) })
+    return () => { active = false }
+  }, [])
+
+  if (works.length === 0) return null
 
   return (
     <section id="realisations" className="section" style={sectionStyle}>
@@ -30,7 +40,7 @@ export default function WorksGallery() {
         </div>
 
         <div style={gridStyle}>
-          {WORKS.map((w) => (
+          {works.map((w) => (
             <div key={w.name} style={cardStyle} className="card-gold works-card">
               <div style={imgWrapStyle}>
                 <img src={w.src} alt={w.name} loading="lazy" style={imgStyle} />

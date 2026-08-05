@@ -97,7 +97,7 @@ export default function OrderPage() {
             <span style={{ fontSize: '24px' }}>⏱️</span>
             <div>
               <p style={{ fontWeight: 700, color: 'var(--white)' }}>1 heure chrono</p>
-              <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Tu recevras un SMS/WhatsApp dès que tes 3 propositions sont prêtes.</p>
+              <p style={{ fontSize: '13px', color: 'var(--gray-500)' }}>Reviens ici avec ton numéro <strong>{order.code}</strong> ou consulte le suivi : tes 3 propositions apparaissent dès qu'elles sont prêtes.</p>
             </div>
           </div>
           <div style={stepsCardStyle}>

@@ -20,7 +20,7 @@ export default function LiveTicker() {
 
   const item = feed[index]
   const styleName = getStyle(item.style).name
-  const waiting = ['propositions_pretes', 'validation_attente'].includes(item.status)
+  const waiting = ['propositions_pretes'].includes(item.status)
   const text = waiting
     ? `${item.name} découvre ses 3 déclinaisons ${styleName} à ${item.quartier}`
     : `${item.name} a validé son toon ${styleName} à ${item.quartier}`

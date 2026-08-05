@@ -7,6 +7,7 @@ export default function OrderView({ order, full = false, onChanged }) {
   const [status, setStatus] = useState(order.status)
   const currentIndex = ORDER_STATUSES.findIndex((s) => s.id === status)
   const [chosenPath, setChosenPath] = useState(order.chosen_variation)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     setStatus(order.status)
@@ -14,12 +15,13 @@ export default function OrderView({ order, full = false, onChanged }) {
   }, [order.status, order.chosen_variation])
 
   const handleChoose = async (idx) => {
+    setError(null)
     try {
       await chooseVariation(order.code, idx)
       setChosenPath(order.variations[idx])
       setStatus('validee')
     } catch (e) {
-      alert(e.message)
+      setError(e.message)
     }
     if (onChanged) onChanged()
   }
@@ -68,7 +70,7 @@ export default function OrderView({ order, full = false, onChanged }) {
         })}
       </div>
 
-      {full && (status === 'propositions_pretes' || status === 'validation_attente' || status === 'validee') && (
+      {full && (status === 'propositions_pretes' || status === 'validee') && (
         <div style={variationsSectionStyle}>
           <h3 style={variationsTitleStyle}>Tes 3 déclinaisons — choisis ta préférée</h3>
           <div className="variations-grid" style={variationsGridStyle}>
@@ -92,6 +94,10 @@ export default function OrderView({ order, full = false, onChanged }) {
             })}
           </div>
         </div>
+      )}
+
+      {error && (
+        <p style={{ fontSize: '13px', color: '#ef4444', fontWeight: 600, textAlign: 'center' }}>⚠️ {error}</p>
       )}
 
       {full && (

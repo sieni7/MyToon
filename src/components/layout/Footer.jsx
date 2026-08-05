@@ -35,8 +35,6 @@ export default function Footer() {
           </p>
           <div style={socialStyle}>
             <a href="https://wa.me/2250545298280" target="_blank" rel="noopener noreferrer" className="footer-social" aria-label="WhatsApp">💬</a>
-            <a href="#" className="footer-social" aria-label="Instagram">📸</a>
-            <a href="#" className="footer-social" aria-label="TikTok">🎵</a>
           </div>
         </div>
 
@@ -56,9 +54,9 @@ export default function Footer() {
           </div>
           <div style={colStyle}>
             <h4 style={colTitle}>Légal</h4>
-            <a href="#" className="footer-link">CGV</a>
-            <a href="#" className="footer-link">Confidentialité</a>
-            <a href="#" className="footer-link">Livraison &amp; retours</a>
+            <Link to="/cgv" className="footer-link">CGV</Link>
+            <Link to="/confidentialite" className="footer-link">Confidentialité</Link>
+            <Link to="/livraison-retours" className="footer-link">Livraison &amp; retours</Link>
           </div>
         </div>
       </div>

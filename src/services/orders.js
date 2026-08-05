@@ -1,8 +1,5 @@
 import { supabase, MEDIA_BUCKET, ensureSession, getCurrentUser } from '../lib/supabase'
-
-function normalizePhone(p) {
-  return String(p || '').replace(/\D/g, '').slice(-9)
-}
+import { normalizePhone } from '../utils/phone.js'
 
 function uid() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
@@ -70,15 +67,18 @@ export async function getOrder(code) {
   return data || null
 }
 
-export async function listMyOrders() {
+export async function listMyOrders(page = 0, pageSize = 50) {
   const user = await getCurrentUser()
-  if (!user) return []
-  const { data } = await supabase
+  if (!user) return { orders: [], total: 0 }
+  const from = page * pageSize
+  const to = from + pageSize - 1
+  const { data, count } = await supabase
     .from('orders')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('owner_user_id', user.id)
     .order('created_at', { ascending: false })
-  return data || []
+    .range(from, to)
+  return { orders: data || [], total: count || 0 }
 }
 
 export async function listOrders() {
@@ -160,11 +160,25 @@ export async function assignPrinter(code, printerId) {
 }
 
 export async function createReorder(order) {
+  const user = await requireUser()
+  let photoPath = order.photo_path || undefined
+  if (order.photo_path) {
+    // Copie la photo dans un nouveau chemin pour ne pas dépendre de l'original
+    try {
+      const { data: blob } = await supabase.storage.from(MEDIA_BUCKET).download(order.photo_path)
+      if (blob) {
+        const clean = order.photo_path.split('/').pop()
+        const ext = (clean.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg'
+        photoPath = `photos/${user.id}/reorder-${uid()}.${ext}`
+        await supabase.storage.from(MEDIA_BUCKET).upload(photoPath, blob, { upsert: false })
+      }
+    } catch { /* garde la référence originale si la copie échoue */ }
+  }
   return createOrder({
     client: { ...order.client },
     product: { ...order.product },
     avatar: { ...order.avatar },
     options: { ...(order.options || {}) },
-    photoPath: order.photo_path || undefined,
+    photoPath,
   })
 }
