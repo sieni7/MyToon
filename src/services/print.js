@@ -1,17 +1,19 @@
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseUrl } from '../lib/supabase'
 
 export async function generatePrintPdf(code) {
   if (!supabase) throw new Error('Supabase non configuré')
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) throw new Error('Session requise')
 
-  const { data, error } = await supabase.functions.invoke('generate-print-pdf', {
-    body: { code },
-    headers: { Authorization: `Bearer ${session.access_token}` },
+  const resp = await fetch(`${supabaseUrl}/functions/v1/generate-print-pdf`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
   })
-  if (error) throw new Error(error.message || "Échec de la génération du PDF")
-  if (!data?.ok) throw new Error(data?.error || "Échec de la génération du PDF")
-  return data.path
+  const body = await resp.json().catch(() => null)
+  if (!resp.ok) throw new Error(body?.error || resp.statusText || 'Échec de la génération du PDF')
+  if (!body?.ok) throw new Error(body?.error || 'Échec de la génération du PDF')
+  return body.path
 }
 
 export async function getPrintPdfUrl(code, expiresIn = 60 * 60 * 24 * 7) {
