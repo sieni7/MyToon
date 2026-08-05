@@ -11,6 +11,7 @@
 - **Validation client** : le client choisit sa déclinaison préférée avant impression
 - **Espace client** : historique et détails des commandes
 - **Atelier (dashboard admin)** : files de travail par statut, dépôt des déclinaisons, assignation d'un imprimeur, timeline complète
+- **Campagnes saisonnières** : Halloween, Fête des Pères, Noël… activables depuis l'admin (dates, bandeau, couleur d'accent) avec **codes promo** appliqués sur le prix (paiement à la livraison)
 - **Preuve sociale** : ticker « En direct » des dernières commandes (anonymisé) et compteur réel de héros créés
 - **Paiement à la livraison**, livraison Abidjan 24-48 h
 
@@ -37,14 +38,17 @@ src/
 │   ├── home/          # BeforeAfter, LiveTicker, Products, WorksGallery
 │   ├── layout/        # Header, Footer, Layout, PromoBanner, SectionDivider
 │   └── order/         # OrderView
+├── context/           # CampaignProvider + useCampaign (campagne active)
 ├── hooks/             # useImageUpload
 ├── lib/               # Client Supabase (supabase.js)
 ├── pages/             # HomePage, OrderPage, TrackingPage, AdminPage, EspacePage…
-├── services/          # orders.js, banner.js, session.js
+├── services/          # orders.js, campaigns.js, banner.js, session.js
 └── utils/             # constants.js (styles, produits, statuts), image.js
 supabase/
-└── migrations/        # 0001_init … 0005_recent_feed
+└── migrations/        # 0001_init … 0007_orders_promo
 ui-test.mjs            # Test Playwright du flux complet (15 checks)
+campaign-check.mjs     # Test campagnes + code promo (backend + bandeau)
+promo-ui-check.mjs     # Test parcours commande avec promo (prix remisé)
 ```
 
 ## 🚀 Démarrage rapide
@@ -76,7 +80,7 @@ Le schéma est versionné dans `supabase/migrations/` et appliqué via la CLI Su
 supabase db push
 ```
 
-- **Tables** : `orders` (commande, client, produit, avatar, options, statut, timeline, variations, imprimeur), `admins`, `settings`
+- **Tables** : `orders` (commande, client, produit, avatar, options, statut, timeline, variations, imprimeur, promo), `admins`, `settings`, `campaigns`
 - **RLS (Row Level Security)** : un client ne voit que ses propres commandes (`owner_user_id`) ; l'admin voit tout via la fonction `is_admin()`. **Aucun secret exposé côté client.**
 - **Storage** : bucket privé `media` — photos clients (`photos/{uid}/…`) et déclinaisons (`variations/{code}/1.jpg…3.jpg`), servies via URLs signées (`SignedImage`).
 - **RPC publiques (security definer, anonymisées)** :
@@ -84,6 +88,8 @@ supabase db push
   - `choose_variation()` → validation d'une déclinaison par le client
   - `order_stats()` → compteur de héros créés (public)
   - `recent_feed()` → ticker anonymisé (prénom + quartier + style + statut)
+  - `get_active_campaign()` → campagne saisonnière active (automatique par date, admin = toggle)
+  - `validate_promo(code)` → valide un code promo actif et renvoie la remise
 - **Auth** : session anonyme automatique pour les clients ; admin par email/mot de passe.
 
 ## 🧪 Tests
@@ -92,7 +98,9 @@ Tests Playwright (Chromium requis : `npx playwright install chromium` puis lance
 
 ```bash
 npm run dev &
-node ui-test.mjs        # Flux complet client + admin (15 checks)
+node ui-test.mjs           # Flux complet client + admin (15 checks)
+node campaign-check.mjs    # Campagne active + validation code promo
+node promo-ui-check.mjs    # Parcours commande avec code promo (prix remisé)
 ```
 
 ## 🌍 Déploiement

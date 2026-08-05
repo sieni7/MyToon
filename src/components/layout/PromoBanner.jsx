@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getBanner } from '../../services/banner'
+import { useCampaign } from '../../context/campaign'
 
 const CLOSE_KEY = 'mytoon_banner_closed'
 
@@ -12,6 +13,7 @@ function isClosed() {
 }
 
 export default function PromoBanner() {
+  const { campaign } = useCampaign()
   const [closed, setClosed] = useState(isClosed())
   const [banner, setBanner] = useState({ text: '', active: false })
 
@@ -21,12 +23,15 @@ export default function PromoBanner() {
     return () => { active = false }
   }, [])
 
-  if (!banner.active || !banner.text || closed) return null
+  const text = campaign?.banner_text || (banner.active && banner.text ? banner.text : '')
+  const accent = campaign?.accent_color || 'var(--orange)'
+
+  if (!text || closed) return null
 
   return (
-    <div style={barStyle}>
+    <div style={{ ...barStyle, background: `linear-gradient(90deg, ${accent}22, ${accent}40, ${accent}22)`, borderBottom: `1px solid ${accent}66` }}>
       <span style={sparkStyle}>⚡</span>
-      <p style={textStyle}>{banner.text}</p>
+      <p style={textStyle}>{text}</p>
       <button
         aria-label="Fermer"
         style={closeStyle}
@@ -44,8 +49,7 @@ export default function PromoBanner() {
 const barStyle = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
   padding: '10px 24px', textAlign: 'center', position: 'relative',
-  background: 'linear-gradient(90deg, rgba(255,107,53,0.16), rgba(212,175,55,0.22), rgba(255,107,53,0.16))',
-  borderBottom: '1px solid rgba(212,175,55,0.35)',
+  transition: 'background 0.3s ease',
 }
 
 const sparkStyle = { fontSize: '16px' }

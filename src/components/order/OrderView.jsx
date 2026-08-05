@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getStatus, getStyle, ORDER_STATUSES, formatPrice } from '../../utils/constants'
+import { getStatus, getStyle, ORDER_STATUSES, formatPrice, priceWithPromo } from '../../utils/constants'
 import { chooseVariation } from '../../services/orders'
 import SignedImage from '../common/SignedImage'
 
@@ -30,7 +30,9 @@ export default function OrderView({ order, full = false, onChanged }) {
         <div>
           <h2 style={orderIdStyle}>{order.code}</h2>
           <p style={orderMetaStyle}>
-            {getStyle(order.avatar.style).name} • {order.product.name} • {formatPrice(order.product.price)}
+            {getStyle(order.avatar.style).name} • {order.product.name} • {order.promo
+              ? <><s style={{ color: 'var(--gray-600)' }}>{formatPrice(order.product.price)}</s> {formatPrice(priceWithPromo(order.product.price, order.promo))} <span style={{ color: 'var(--gold)' }}>(−{order.promo.discount}%)</span></>
+              : formatPrice(order.product.price)}
           </p>
         </div>
         <div style={statusBadgeStyle}>

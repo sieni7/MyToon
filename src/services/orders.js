@@ -20,7 +20,7 @@ async function requireUser() {
   return user
 }
 
-export async function createOrder({ client, product, avatar, photoFile, photoPath, options }) {
+export async function createOrder({ client, product, avatar, photoFile, photoPath, options, promo }) {
   const user = await requireUser()
 
   const { data: code, error: codeError } = await supabase.rpc('next_order_code')
@@ -52,6 +52,7 @@ export async function createOrder({ client, product, avatar, photoFile, photoPat
       variations: [],
       chosen_variation: null,
       printer_id: null,
+      promo: promo || null,
     })
     .select()
     .single()

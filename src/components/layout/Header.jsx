@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { useCampaign } from '../../context/campaign'
 
 const navLinks = [
   { label: 'Accueil', to: '/' },
@@ -12,6 +13,7 @@ export default function Header() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+  const { campaign } = useCampaign()
 
   useEffect(() => {
     setOpen(false)
@@ -46,7 +48,7 @@ export default function Header() {
     <header style={headerStyle}>
       <div className="container" style={innerStyle}>
         <Link to="/" style={logoStyle}>
-          <span style={logoAccent}>M</span>y<span style={logoAccent}>T</span>oon
+          <span style={campaign ? { color: campaign.accent_color } : logoAccent}>M</span>y<span style={campaign ? { color: campaign.accent_color } : logoAccent}>T</span>oon
         </Link>
 
         <nav className="nav-desktop" style={navStyle}>
@@ -60,6 +62,11 @@ export default function Header() {
               {link.label}
             </NavLink>
           ))}
+          {campaign && (
+            <span style={{ ...seasonBadgeStyle, color: campaign.accent_color, borderColor: `${campaign.accent_color}55` }}>
+              {campaign.name}
+            </span>
+          )}
           <button className="btn btn-primary" style={{ padding: '10px 24px', fontSize: '13px' }} onClick={handleCta}>
             Créer mon héros
           </button>
@@ -133,6 +140,15 @@ const atelierBadgeStyle = {
   marginLeft: '10px',
   verticalAlign: 'middle',
   letterSpacing: '1px',
+}
+
+const seasonBadgeStyle = {
+  fontSize: '12px',
+  fontWeight: 700,
+  border: '1px solid',
+  borderRadius: '100px',
+  padding: '6px 14px',
+  letterSpacing: '0.5px',
 }
 
 const navStyle = {

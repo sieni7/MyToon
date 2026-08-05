@@ -134,6 +134,11 @@ export function formatPrice(price) {
   return `${Number(price).toLocaleString('fr-FR')} FCFA`
 }
 
+export function priceWithPromo(price, promo) {
+  const discount = promo && Number(promo.discount) ? Number(promo.discount) : 0
+  return Math.round(Number(price) * (1 - discount / 100))
+}
+
 export function getStyle(id) {
   return STYLES.find((s) => s.id === id) || STYLES[0]
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ORDER_STATUSES, getStatus, getStyle, formatPrice, AVATARS } from '../utils/constants'
+import { ORDER_STATUSES, getStatus, getStyle, formatPrice, priceWithPromo, AVATARS } from '../utils/constants'
 import { listOrders, updateStatus, setVariations, assignPrinter, isAdmin } from '../services/orders'
 import { getBanner, setBanner } from '../services/banner'
+import { listCampaigns, createCampaign, updateCampaign, deleteCampaign } from '../services/campaigns'
 import { signInAdmin, signOut } from '../lib/supabase'
 import SignedImage from '../components/common/SignedImage'
 import AvatarImage from '../components/common/AvatarImage'
@@ -157,7 +158,14 @@ function Dashboard({ onLogout }) {
         <button style={{ ...tabStyle, color: tab === 'settings' ? 'var(--orange)' : 'var(--gray-400)', borderColor: tab === 'settings' ? 'rgba(255,107,53,0.5)' : 'rgba(255,255,255,0.1)' }} onClick={() => setTab('settings')}>
           ⚙️ Réglages
         </button>
+        <button style={{ ...tabStyle, color: tab === 'campaigns' ? 'var(--orange)' : 'var(--gray-400)', borderColor: tab === 'campaigns' ? 'rgba(255,107,53,0.5)' : 'rgba(255,255,255,0.1)' }} onClick={() => setTab('campaigns')}>
+          🎉 Campagnes
+        </button>
       </div>
+
+      {tab === 'campaigns' && (
+        <CampaignsTab />
+      )}
 
       {tab === 'settings' && (
         <form onSubmit={saveBanner} style={bannerCardStyle}>
@@ -305,7 +313,9 @@ function OrderCard({ order, queue, open, onToggle, onChanged }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={orderIdStyle}>{order.code}</span>
           <span style={metaStyle}>
-            {getStyle(order.avatar.style).name} • {order.product.name} • {formatPrice(order.product.price)}
+            {getStyle(order.avatar.style).name} • {order.product.name} • {order.promo
+              ? <><s style={{ color: 'var(--gray-600)' }}>{formatPrice(order.product.price)}</s> {formatPrice(priceWithPromo(order.product.price, order.promo))} <span style={{ color: 'var(--gold)' }}>(−{order.promo.discount}%)</span></>
+              : formatPrice(order.product.price)}
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -436,6 +446,199 @@ function OrderCard({ order, queue, open, onToggle, onChanged }) {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+const EMPTY_FORM = {
+  name: '', code: '', start_date: '', end_date: '', active: false,
+  banner_text: '', accent_color: '#ff6b35', promo_code: '', promo_discount: '',
+}
+
+function toLocalInput(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function CampaignsTab() {
+  const [campaigns, setCampaigns] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [editingId, setEditingId] = useState(null)
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+  const [saved, setSaved] = useState(false)
+
+  const refresh = async () => {
+    const list = await listCampaigns()
+    setCampaigns(list)
+    setLoading(false)
+  }
+
+  useEffect(() => { refresh() }, [])
+
+  const reset = () => {
+    setForm(EMPTY_FORM)
+    setEditingId(null)
+    setError(null)
+  }
+
+  const startEdit = (c) => {
+    setEditingId(c.id)
+    setForm({
+      name: c.name, code: c.code, start_date: toLocalInput(c.start_date), end_date: toLocalInput(c.end_date),
+      active: c.active, banner_text: c.banner_text || '', accent_color: c.accent_color || '#ff6b35',
+      promo_code: c.promo_code || '', promo_discount: c.promo_discount != null ? String(c.promo_discount) : '',
+    })
+    setError(null)
+  }
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setError(null)
+    try {
+      const payload = {
+        name: form.name.trim(),
+        code: form.code.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+        start_date: form.start_date ? new Date(form.start_date).toISOString() : null,
+        end_date: form.end_date ? new Date(form.end_date).toISOString() : null,
+        active: form.active,
+        banner_text: form.banner_text.trim(),
+        accent_color: form.accent_color,
+        promo_code: form.promo_code.trim().toUpperCase(),
+        promo_discount: form.promo_discount === '' ? null : Math.max(0, Math.min(100, Number(form.promo_discount))),
+      }
+      if (editingId) {
+        await updateCampaign(editingId, payload)
+      } else {
+        await createCampaign(payload)
+      }
+      reset()
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+      await refresh()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const toggleActive = async (c) => {
+    await updateCampaign(c.id, { active: !c.active })
+    await refresh()
+  }
+
+  const handleDelete = async (c) => {
+    if (!window.confirm(`Supprimer la campagne « ${c.name} » ?`)) return
+    await deleteCampaign(c.id)
+    if (editingId === c.id) reset()
+    await refresh()
+  }
+
+  const setField = (key, value) => setForm((f) => ({ ...f, [key]: value }))
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {loading && <p style={emptyStyle}>Chargement…</p>}
+
+      {!loading && campaigns.length === 0 && (
+        <p style={emptyStyle}>Aucune campagne. Crée ta première campagne saisonnière ci-dessous.</p>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {campaigns.map((c) => (
+          <div key={c.id} style={campaignCardStyle}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '220px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <strong style={{ fontSize: '15px', color: 'var(--white)' }}>{c.name}</strong>
+                <span style={{ fontSize: '12px', color: 'var(--gray-500)' }}>code: {c.code}</span>
+                {c.promo_code && (
+                  <span style={{ ...promoCodeBadgeStyle, borderColor: `${c.accent_color}66`, color: c.accent_color }}>
+                    {c.promo_code} −{c.promo_discount}%
+                  </span>
+                )}
+                <span style={{ ...statusDotStyle, background: c.active ? '#22c55e' : 'var(--gray-600)' }} />
+                <span style={{ fontSize: '12px', fontWeight: 600, color: c.active ? '#22c55e' : 'var(--gray-500)' }}>
+                  {c.active ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              {c.banner_text && <p style={{ fontSize: '13px', color: 'var(--gray-400)' }}>{c.banner_text}</p>}
+              <p style={{ fontSize: '12px', color: 'var(--gray-600)' }}>
+                {c.start_date ? new Date(c.start_date).toLocaleDateString('fr-FR') : '—'} → {c.end_date ? new Date(c.end_date).toLocaleDateString('fr-FR') : 'illimitée'}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => toggleActive(c)}>
+                {c.active ? 'Désactiver' : 'Activer'}
+              </button>
+              <button className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '12px' }} onClick={() => startEdit(c)}>
+                Modifier
+              </button>
+              <button className="btn btn-secondary" style={{ padding: '8px 16px', fontSize: '12px', color: '#ef4444' }} onClick={() => handleDelete(c)}>
+                Suppr.
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <form onSubmit={handleSave} style={campaignFormStyle}>
+        <p style={boxTitleStyle}>{editingId ? '✏️ Modifier la campagne' : '➕ Nouvelle campagne'}</p>
+        <div style={campaignGridStyle}>
+          <label style={campaignFieldStyle}>
+            Nom
+            <input style={inputStyle} value={form.name} onChange={(e) => setField('name', e.target.value)} placeholder="Ex : Noël 2026" required />
+          </label>
+          <label style={campaignFieldStyle}>
+            Code (identifiant unique)
+            <input style={inputStyle} value={form.code} onChange={(e) => setField('code', e.target.value)} placeholder="Ex : noel-2026" required />
+          </label>
+          <label style={campaignFieldStyle}>
+            Début
+            <input type="datetime-local" style={inputStyle} value={form.start_date} onChange={(e) => setField('start_date', e.target.value)} />
+          </label>
+          <label style={campaignFieldStyle}>
+            Fin
+            <input type="datetime-local" style={inputStyle} value={form.end_date} onChange={(e) => setField('end_date', e.target.value)} />
+          </label>
+          <label style={{ ...campaignFieldStyle, gridColumn: '1 / -1' }}>
+            Texte du bandeau (affiché sur tout le site)
+            <input style={inputStyle} value={form.banner_text} onChange={(e) => setField('banner_text', e.target.value)} placeholder="Ex : 🎄 Noël : -10% avec le code NOEL10" />
+          </label>
+          <label style={campaignFieldStyle}>
+            Code promo
+            <input style={{ ...inputStyle, textTransform: 'uppercase' }} value={form.promo_code} onChange={(e) => setField('promo_code', e.target.value)} placeholder="Ex : NOEL10" />
+          </label>
+          <label style={campaignFieldStyle}>
+            Remise (%)
+            <input type="number" min="0" max="100" style={inputStyle} value={form.promo_discount} onChange={(e) => setField('promo_discount', e.target.value)} placeholder="Ex : 10" />
+          </label>
+          <label style={campaignFieldStyle}>
+            Couleur d'accent (bandeau)
+            <input type="color" style={{ ...inputStyle, padding: '4px', height: '44px' }} value={form.accent_color} onChange={(e) => setField('accent_color', e.target.value)} />
+          </label>
+          <label style={toggleStyle}>
+            <input type="checkbox" checked={form.active} onChange={(e) => setField('active', e.target.checked)} />
+            Activer immédiatement
+          </label>
+        </div>
+        {error && <p style={{ fontSize: '13px', color: '#ef4444', fontWeight: 600 }}>⚠️ {error}</p>}
+        {saved && <p style={{ fontSize: '13px', color: '#22c55e', fontWeight: 600 }}>✓ Campagne enregistrée</p>}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button className="btn btn-primary" type="submit" disabled={saving} style={{ padding: '12px 24px', fontSize: '13px' }}>
+            {saving ? 'Enregistrement…' : editingId ? 'Enregistrer' : 'Créer la campagne'}
+          </button>
+          {editingId && (
+            <button className="btn btn-secondary" type="button" style={{ padding: '12px 24px', fontSize: '13px' }} onClick={reset}>
+              Annuler
+            </button>
+          )}
+        </div>
+      </form>
     </div>
   )
 }
@@ -582,4 +785,32 @@ const uploadBtnStyle = {
 const printerInputStyle = {
   width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)',
   background: 'var(--black-3)', color: 'var(--white)', fontSize: '14px', outline: 'none',
+}
+
+const campaignCardStyle = {
+  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap',
+  background: 'var(--black-2)', border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: '14px', padding: '16px 20px',
+}
+
+const promoCodeBadgeStyle = {
+  fontSize: '12px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px',
+  background: 'rgba(255,255,255,0.04)', border: '1px solid',
+}
+
+const statusDotStyle = { width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block' }
+
+const campaignFormStyle = {
+  display: 'flex', flexDirection: 'column', gap: '16px',
+  background: 'var(--black-2)', border: '1px solid rgba(212,175,55,0.2)',
+  borderRadius: '16px', padding: '20px',
+}
+
+const campaignGridStyle = {
+  display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px',
+}
+
+const campaignFieldStyle = {
+  display: 'flex', flexDirection: 'column', gap: '6px',
+  fontSize: '13px', fontWeight: 600, color: 'var(--gray-400)',
 }

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ACTIVE_STYLES, ACTIVE_AVATARS, PRODUCTS, SIZE_GUIDE, formatPrice, getStyle } from '../utils/constants'
+import { ACTIVE_STYLES, ACTIVE_AVATARS, PRODUCTS, SIZE_GUIDE, formatPrice, priceWithPromo, getStyle } from '../utils/constants'
 import AvatarImage from '../components/common/AvatarImage'
 import UploadArea from '../components/upload/UploadArea'
 import { useImageUpload } from '../hooks/useImageUpload'
 import { compressImageToBlob } from '../utils/image'
 import { createOrder } from '../services/orders'
+import { validatePromo } from '../services/campaigns'
 
 const STEP_LABELS = ['Avatar', 'Support', 'Photo & infos']
 
@@ -26,9 +27,35 @@ export default function OrderPage() {
   const [submitError, setSubmitError] = useState(null)
   const [order, setOrder] = useState(null)
   const { image, preview, loading: uploadLoading, error: uploadError, handleFile } = useImageUpload()
+  const [promo, setPromo] = useState('')
+  const [promoInfo, setPromoInfo] = useState(null)
+  const [promoError, setPromoError] = useState(null)
+  const [promoBusy, setPromoBusy] = useState(false)
 
   const avatars = ACTIVE_AVATARS.filter((a) => a.style === styleId)
   const selectedStyle = getStyle(styleId)
+  const effectivePrice = priceWithPromo(product.price, promoInfo)
+
+  const applyPromo = async () => {
+    const raw = promo.trim()
+    if (!raw) { setPromoInfo(null); setPromoError(null); return }
+    setPromoBusy(true)
+    setPromoError(null)
+    try {
+      const info = await validatePromo(raw)
+      if (info) {
+        setPromoInfo(info)
+        setPromoError(null)
+      } else {
+        setPromoInfo(null)
+        setPromoError('Code promo invalide ou expiré.')
+      }
+    } catch {
+      setPromoError('Erreur de validation du code promo.')
+    } finally {
+      setPromoBusy(false)
+    }
+  }
 
   const canGoNext = step === 1 ? !!avatar : step === 2 ? !!(size && color) : !!(image && form.nom && form.telephone)
 
@@ -43,6 +70,7 @@ export default function OrderPage() {
         avatar: { id: avatar.id, style: avatar.style, name: avatar.name },
         photoFile: photoBlob,
         options: { size, color },
+        promo: promoInfo ? { code: promo.trim().toUpperCase(), discount: promoInfo.discount } : null,
       })
       setOrder(created)
       setStep(4)
@@ -63,7 +91,7 @@ export default function OrderPage() {
             Nos artistes créent <strong>3 déclinaisons</strong> de ton toon style <strong>{getStyle(order.avatar.style).name}</strong>{' '}
             sur ton <strong>{order.product.name}</strong>{' '}
             <strong>{order.options?.size}</strong> {order.options?.color && <strong>{order.options.color}</strong>}{' '}
-            ({formatPrice(order.product.price)}).
+            ({formatPrice(priceWithPromo(order.product.price, order.promo))}).
           </p>
           <div style={promiseStyle}>
             <span style={{ fontSize: '24px' }}>⏱️</span>
@@ -280,7 +308,54 @@ export default function OrderPage() {
               <span style={recapIconStyle}>💳</span>
               <div style={{ flex: 1 }}>
                 <p style={recapLabelStyle}>Prix</p>
-                <p style={recapValueStyle}>{formatPrice(product.price)} — paiement à la livraison</p>
+                <p style={recapValueStyle}>
+                  {promoInfo ? (
+                    <>
+                      <s style={{ color: 'var(--gray-600)' }}>{formatPrice(product.price)}</s>{' '}
+                      <strong style={{ color: 'var(--gold)' }}>{formatPrice(effectivePrice)}</strong>{' '}
+                      <span style={{ color: 'var(--gold)' }}>−{promoInfo.discount}%</span>
+                    </>
+                  ) : (
+                    formatPrice(product.price)
+                  )}{' '}
+                  — paiement à la livraison
+                </p>
+              </div>
+            </div>
+            <div style={recapRowStyle}>
+              <span style={recapIconStyle}>🏷️</span>
+              <div style={{ flex: 1 }}>
+                <p style={recapLabelStyle}>Code promo</p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <input
+                    style={promoInputStyle}
+                    value={promo}
+                    onChange={(e) => { setPromo(e.target.value); setPromoInfo(null); setPromoError(null) }}
+                    placeholder="Ex : NOEL10"
+                    disabled={!!promoInfo}
+                  />
+                  {promoInfo ? (
+                    <button style={promoBtnStyle} onClick={() => { setPromoInfo(null); setPromo('') }}>
+                      Retirer
+                    </button>
+                  ) : (
+                    <button
+                      style={{ ...promoBtnStyle, opacity: promoBusy ? 0.6 : 1 }}
+                      onClick={applyPromo}
+                      disabled={promoBusy}
+                    >
+                      {promoBusy ? '...' : 'Appliquer'}
+                    </button>
+                  )}
+                </div>
+                {promoInfo && (
+                  <p style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: 600, marginTop: '4px' }}>
+                    ✓ {promoInfo.campaign_name} — remise de {promoInfo.discount}% appliquée
+                  </p>
+                )}
+                {promoError && (
+                  <p style={{ fontSize: '12px', color: '#ef4444', fontWeight: 600, marginTop: '4px' }}>✕ {promoError}</p>
+                )}
               </div>
             </div>
             <div style={recapRowStyle}>
@@ -335,7 +410,7 @@ export default function OrderPage() {
           </button>
         ) : (
           <button className="btn btn-primary" disabled={!canGoNext || submitting} onClick={handleSubmit}>
-            {submitting ? 'Création...' : `Confirmer — ${formatPrice(product.price)}`}
+            {submitting ? 'Création...' : `Confirmer — ${formatPrice(effectivePrice)}`}
           </button>
         )}
       </div>
@@ -436,6 +511,17 @@ const recapValueStyle = { fontSize: '14px', color: 'var(--white)', fontWeight: 5
 const editBtnStyle = {
   background: 'none', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--gray-400)',
   padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', flexShrink: 0,
+}
+
+const promoInputStyle = {
+  padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.15)',
+  background: 'var(--black-2)', color: 'var(--white)', fontSize: '14px', outline: 'none',
+  textTransform: 'uppercase', letterSpacing: '1px', minWidth: '180px',
+}
+
+const promoBtnStyle = {
+  background: 'rgba(255,107,53,0.12)', color: 'var(--orange)', border: '1px solid rgba(255,107,53,0.3)',
+  padding: '10px 18px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
 }
 
 const successWrapStyle = { padding: '120px 0 80px', maxWidth: '640px' }
