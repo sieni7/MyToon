@@ -32,7 +32,7 @@ Paiement **à la livraison** : **Wave**, **Orange Money**, **MTN MoMo** ou **esp
 Oui. Tu reçois un numéro **`MT-XXXX`** que tu peux consulter à tout moment sur la page **Suivi** pour voir l'évolution (7 statuts visibles en temps réel).
 
 ### A6. Que reçoit-on exactement ?
-Un vêtement imprimé (t-shirt ou polo) avec **ta déclinaison toon** choisie. Le fichier d'impression est préparé pour l'imprimeur (PDF DTF). Il n'y a pas de téléchargement numérique **À compléter** : la livraison est le support physique.
+Un vêtement imprimé (t-shirt ou polo) avec **ta déclinaison toon** choisie. Le fichier d'impression est préparé pour l'imprimeur (PDF DTF). Le téléchargement d'une version numérique de ton toon n'est pas encore disponible — **À compléter** dès que cette fonctionnalité existera.
 
 ### A7. Quelle photo envoyer ?
 Une photo **nette, bien éclairée**, visage dégagé, de préférence de face. Voir « Les meilleures photos » dans le [`CENTRE-AIDE.md`](CENTRE-AIDE.md).

@@ -30,7 +30,7 @@
 
 > ⚠️ Si tu vois *« Ce compte n'est pas un administrateur MyToon »*, ton compte n'est pas (ou plus) dans la table `admins` — contacte le gestionnaire technique (création via `scripts/seed-admin.mjs`, voir [T5](../users/TUTORIELS.md#t5--créer-un-compte-administrateur-développeur)).
 
-![Connexion admin](screenshots/admin-login.png) <!-- À compléter -->
+![Connexion admin](../screenshots/admin-login.png) <!-- À compléter -->
 
 ---
 
@@ -43,7 +43,7 @@ L'**Atelier** affiche :
 - Un bouton **Déconnexion**.
 - Trois onglets : **🛠️ Commandes**, **⚙️ Réglages**, **🎉 Campagnes**.
 
-![Atelier](screenshots/admin-dashboard.png) <!-- À compléter -->
+![Atelier](../screenshots/admin-dashboard.png) <!-- À compléter -->
 
 Chaque **carte commande** (cliquable pour se déplier) montre : le code `MT-XXXX`, le style, le produit et le prix (avec remise promo éventuelle), la file courante et le statut.
 
@@ -77,7 +77,7 @@ Cette étape est le **cœur du travail d'artiste** dans l'atelier.
 
 > ⚠️ Le dépôt des 3 images passe automatiquement la commande au statut **`propositions_pretes`** (file **En validation client**). Un dépôt partiel n'est pas prévu : prépare tes 3 images avant de déposer.
 
-![Dépôt des déclinaisons](screenshots/admin-variations.png) <!-- À compléter -->
+![Dépôt des déclinaisons](../screenshots/admin-variations.png) <!-- À compléter -->
 
 ---
 
@@ -176,7 +176,7 @@ Chaque carte campagne propose :
 
 > ⚠️ Une campagne **désactivée** ne s'affiche jamais, même dans sa fenêtre de dates. Le code promo correspondant est alors invalide (recalculé par le serveur).
 
-![Campagnes](screenshots/admin-campaigns.png) <!-- À compléter -->
+![Campagnes](../screenshots/admin-campaigns.png) <!-- À compléter -->
 
 ---
 
