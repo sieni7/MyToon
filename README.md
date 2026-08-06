@@ -4,7 +4,7 @@
 
 **MyToon** est une boutique streetwear nouvelle génération née à Abidjan. Tu envoies une photo, nos artistes te créent **3 déclinaisons toon** en **1 heure chrono**, et tu reçois un t-shirt ou un polo 100 % coton local imprimé avec ton héros — **livré en 24-48 h** à Abidjan.
 
-[🚀 Démo en ligne](https://my-toon.netlify.app/) · [📦 Repository](https://github.com/sieni7/MyToon) · [❓ Centre d'aide](docs/CENTRE-AIDE.md)
+[🚀 Démo en ligne](https://my-toon.netlify.app/) · [📦 Repository](https://github.com/sieni7/MyToon) · [📚 Documentation](docs/README.md) · [❓ Centre d'aide](docs/users/CENTRE-AIDE.md)
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
@@ -70,7 +70,7 @@ _Né à Abidjan, taillé pour les héros._ MyToon est une marque pensée pour l'
 | --- | --- |
 | 🌐 Démo en ligne | https://my-toon.netlify.app/ |
 | 📦 Repository | https://github.com/sieni7/MyToon |
-| ❓ Centre d'aide utilisateur | [`docs/CENTRE-AIDE.md`](docs/CENTRE-AIDE.md) |
+| ❓ Centre d'aide utilisateur | [`docs/users/CENTRE-AIDE.md`](docs/users/CENTRE-AIDE.md) |
 
 ---
 
@@ -130,7 +130,7 @@ flowchart LR
 | **Hébergement** | Netlify | Deploy automatique sur push `master` |
 | **CLI BDD** | Supabase CLI | Migrations versionnées + deploy Edge |
 
-> ℹ️ **Note sur l'IA** : MyToon n'utilise pas de transformation automatique par IA. Chaque toon est **dessiné à la main par un artiste** à partir de ta photo — c'est la différence qualitative du produit.
+> ℹ️ **Note sur l'IA** : MyToon n'utilise pas de transformation automatique par IA. Chaque toon est **dessiné à la main par un artiste** à partir de ta photo — c'est la différence qualitative du produit. Voir [DECISIONS.md](docs/developers/DECISIONS.md) (DEC-001).
 
 ---
 
@@ -165,10 +165,9 @@ flowchart TB
     SITE --> UI
 ```
 
-**Principes clés**
-- **RLS stricte** : un client ne voit que ses commandes (`owner_user_id`), l'admin voit tout via `is_admin()` (fonction `security definer`).
-- **Promo infalsifiable** : le trigger `enforce_order_promo` revalide chaque code contre `campaigns` (actif + dates) et force la remise côté serveur.
-- **Aucun secret côté client** : seules des clés *publishable* sont embarquées ; les opérations sensibles passent par RPC ou Edge Function.
+**Principes clés** : RLS stricte (un client ne voit que ses commandes), promo infalsifiable (trigger `enforce_order_promo`), aucun secret côté client (clés *publishable* uniquement, opérations sensibles via RPC / Edge Function).
+
+> 👉 Architecture détaillée (tables, colonnes, matrice RLS, topologie) : [`docs/developers/ARCHITECTURE.md`](docs/developers/ARCHITECTURE.md)
 
 ---
 
@@ -203,6 +202,7 @@ mytoon/
 │   └── migrations/          # 0001_init → 0009_remediation (versionné)
 ├── scripts/
 │   └── seed-admin.mjs       # Création du compte admin
+├── docs/                    # 📚 Portail documentaire (voir docs/README.md)
 ├── public/                  # favicon, _redirects, avatars, reference, prompts
 ├── *.mjs                    # Suites de tests Playwright / backend
 └── vite.config.js
@@ -271,7 +271,7 @@ Pousse sur `master` → déploiement automatique. Voir § Déploiement.
 | `SUPABASE_PUBLISHABLE_KEY` | Clé publishable |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Compte admin pour les tests E2E |
 
-> ⚠️ **Hygiène des secrets** : `.env` et `.env.*` sont dans `.gitignore`. Ne **jamais** y ajouter de secret de service, et déclarer les variables `VITE_*` dans le dashboard **Netlify** (Build & deploy → Environment).
+> ⚠️ **Hygiène des secrets** : `.env` et `.env.*` sont dans `.gitignore`. Ne **jamais** y ajouter de secret de service, et déclarer les variables `VITE_*` dans le dashboard **Netlify** (Build & deploy → Environment). Voir [`docs/developers/SECURITY.md`](docs/developers/SECURITY.md).
 
 ---
 
@@ -291,6 +291,8 @@ Pousse sur `master` → déploiement automatique. Voir § Déploiement.
 4. Quand le client valide : assigne un **imprimeur**, passe en impression → expédition → livrée.
 5. **Fichier d'impression** : Générer le PDF A4 → 📄 Télécharger / 🔗 Copier le lien / 💬 Envoyer à l'imprimeur.
 6. **Réglages** : bandeau promo. **Campagnes** : création, activation, code promo, couleur d'accent.
+
+> 👉 Manuel détaillé destiné aux opérateurs non développeurs : [`docs/admin/GUIDE-ADMIN.md`](docs/admin/GUIDE-ADMIN.md)
 
 ---
 
@@ -322,12 +324,16 @@ npx supabase db push
 - `get_active_campaign()` → campagne active (automatique par date)
 - `validate_promo(code)` → remise d'un code actif
 
-### Sécurité
+> 👉 Signatures complètes, schéma BDD et exemples d'appel : [`docs/developers/API.md`](docs/developers/API.md)
+
+### Sécurité (résumé)
 - **RLS** : chaque client ne voit que ses commandes ; l'admin voit tout.
 - **Trigger `enforce_order_promo`** : revalide promo + force la remise côté serveur.
 - **Téléphone E.164** : `utils/phone.js` (10 chiffres → `+225…`, 13 chiffres `225…` conservés).
 - **Edge Function `verify_jwt = true`** + contrôle admin interne (403 sinon).
 - **Storage privé** : seules des URLs signées sont servies au navigateur.
+
+> 👉 Modèle complet (matrice RLS, JWT, storage, hygiène secrets) : [`docs/developers/SECURITY.md`](docs/developers/SECURITY.md)
 
 ### Workflow imprimeur (PDF A4 / DTF)
 Quand une commande est `validee`, l'admin génère un PDF A4 via l'Edge Function `generate-print-pdf` (bandeau méta : code, client, téléphone, produit, taille, couleur, imprimeur, date + mention DTF + artwork), stocké dans `media/print/{code}.pdf`, téléchargeable / lien signé 7 jours / envoi WhatsApp.
@@ -356,8 +362,7 @@ Quand une commande est `validee`, l'admin génère un PDF A4 via l'Edge Function
 - **Boutons** : `.btn-primary` (dégradé orange), `.btn-secondary`, `.btn-portal` (animé).
 - **Texte dégradé** : `.gradient-text` (orange → jaune), `.gold-text`.
 
-### Animations (CSS keyframes)
-`float` (mockup t-shirt), `pulse-portal`, `border-rotate`, `reveal`, `pop` (succès), `slide-up`, `twinkle`, `shimmer`, `count-up`, `pulse` (ticker), `ticker-in`, `spin`, `lightning-flash`.
+> 👉 Référence complète (composants, animations, breakpoints) : [`docs/developers/DESIGN-SYSTEM.md`](docs/developers/DESIGN-SYSTEM.md)
 
 ---
 
@@ -400,6 +405,21 @@ Quand une commande est `validee`, l'admin génère un PDF A4 via l'Edge Function
 
 ---
 
+## 📚 Documentation
+
+Le projet dispose d'un **portail documentaire** complet, organisé par public :
+
+| Public | Espace | Contenu |
+| --- | --- | --- |
+| 📘 Utilisateur | [`docs/users/`](docs/users/) | Centre d'aide, FAQ, tutoriels |
+| 🛠 Administrateur | [`docs/admin/`](docs/admin/) | Guide admin, exploitation (opérations) |
+| 👨‍💻 Développeur | [`docs/developers/`](docs/developers/) | Architecture, API, sécurité, design system, décisions, contribution |
+| 🚀 Produit | [`docs/product/`](docs/product/) | Produit, feuille de route, changelog |
+
+➡️ Accéder au portail : [`docs/README.md`](docs/README.md)
+
+---
+
 ## 🗺️ Roadmap
 
 ### Version actuelle
@@ -416,20 +436,21 @@ Quand une commande est `validee`, l'admin génère un PDF A4 via l'Edge Function
 ### Prévu
 - [ ] Styles **Cartoon** et **Sketch** (badge « Bientôt » déjà en place)
 - [ ] Connexion par SMS (numéro + code) pour retrouver ses commandes sur n'importe quel appareil (Phase B)
-- [ ] **À compléter** : suite de la feuille de route
+
+> 👉 Détail et horizon : [`docs/product/ROADMAP.md`](docs/product/ROADMAP.md)
 
 ---
 
 ## 🤝 Contributing
 
-MyToon est un projet ouvert aux contributions. Merci de respecter ce workflow :
+MyToon est un projet ouvert aux contributions.
 
 1. **Fork** le dépôt, crée une branche : `git checkout -b feat/ma-amelioration`.
-2. Fais des commits **atomiques** et **descriptifs** (voir style ci-dessous).
+2. Fais des commits **atomiques** et **descriptifs** (voir convention ci-dessous).
 3. Pousse et ouvre une **Pull Request** vers `master`.
 4. Décris clairement : le problème, la solution, et les tests.
 
-> **À compléter** : ajouter un `CONTRIBUTING.md` et des templates d'issues / PR si le projet s'ouvre à davantage de contributeurs.
+> 👉 Guide complet (workflow, code style, tests) : [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ### Convention de commits
 | Type | Exemple |
@@ -496,6 +517,8 @@ Déployé automatiquement sur **Netlify** à chaque push sur `master`.
 | Quels sont les prix ? | T-shirt 10 000 FCFA, polo 15 000 FCFA. La création du toon est incluse. |
 | Comment payer ? | Wave, Orange Money et Mobile Money — paiement à la livraison. |
 | Puis-je suivre ma commande ? | Oui, avec ton numéro `MT-XXXX` sur la page Suivi, à tout moment. |
+
+> 👉 FAQ étendue (client, admin, technique) : [`docs/users/FAQ.md`](docs/users/FAQ.md)
 
 ---
 
