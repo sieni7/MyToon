@@ -8,7 +8,7 @@
 
 | ID | Décision | Domaine |
 | --- | --- | --- |
-| [DEC-001](#dec-001--artistes-humains-plutôt-quia-générative) | Artistes humains plutôt qu'IA générative | Produit |
+| [DEC-001](#dec-001--création-assistée-par-ia-supervisée-par-un-graphiste) | Création assistée par IA, supervisée par un graphiste | Produit |
 | [DEC-002](#dec-002--paiement-à-la-livraison) | Paiement à la livraison | Produit |
 | [DEC-003](#dec-003--lancement-limité-à-abidjan) | Lancement limité à Abidjan | Produit |
 | [DEC-004](#dec-004--choix-de-supabase) | Choix de Supabase | Technique |
@@ -22,11 +22,11 @@
 
 ---
 
-## DEC-001 · Artistes humains plutôt qu'IA générative
+## DEC-001 · Création assistée par IA, supervisée par un graphiste
 
 - **Contexte** : la personnalisation de vêtements à partir d'une photo peut être automatisée par IA. Le marché regorge de filtres génériques.
-- **Décision** : MyToon utilise des **artistes humains** qui dessinent chaque toon à la main à partir de la photo du client (3 déclinaisons en 1 h). Aucune transformation automatique par IA.
-- **Conséquences** : différence qualitative et identitaire forte ; création non instantanée (1 h) ; coût de création inclus dans le prix ; cohérence de communication exigée (jamais promettre d'IA).
+- **Décision** : MyToon combine **graphiste humain + IA** : le graphiste utilise un **outil de génération par IA** (prompts de style — voir [`public/prompts.txt`](../../public/prompts.txt)) pour créer les **3 déclinaisons toon** à partir de la photo du client (3 déclinaisons en 1 h). L'humain reste maître du rendu : il sélectionne, ajuste et valide chaque toon avant dépôt.
+- **Conséquences** : différence qualitative et identitaire forte (rendu personnalisé, pas un filtre générique en 1 clic) ; création non instantanée (1 h) ; coût de création inclus dans le prix ; cohérence de communication exigée (promettre « graphiste + IA », jamais une génération 100 % automatique sans supervision).
 - **Sources** : `README.md` (note IA), `PRODUCT.md`.
 
 ## DEC-002 · Paiement à la livraison

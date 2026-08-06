@@ -63,7 +63,7 @@ Chaque évolution doit respecter les valeurs produit (voir [`PRODUCT.md`](PRODUC
 - [ ] **Connexion par SMS** (numéro + code) pour retrouver ses commandes sur n'importe quel appareil (**Phase B**). Aujourd'hui l'accès à l'espace client est lié à l'**appareil** (session anonyme) — limite documentée dans [`PRODUCT.md`](PRODUCT.md) et [`OPERATIONS.md`](../admin/OPERATIONS.md).
 
 ### Exploitation
-- [ ] Compléter la **liste des imprimeurs partenaires** et des **artistes actifs** (contacts opérationnels — voir [`OPERATIONS.md`](../admin/OPERATIONS.md)).
+- [ ] Compléter la **liste des imprimeurs partenaires** et des **graphistes actifs** (contacts opérationnels — voir [`OPERATIONS.md`](../admin/OPERATIONS.md)).
 
 ---
 

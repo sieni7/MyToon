@@ -15,7 +15,7 @@
 - [O4 · Un PDF ne se génère pas](#o4--un-pdf-ne-se-génère-pas)
 - [O5 · Un client perd sa commande](#o5--un-client-perd-sa-commande)
 - [O6 · Un imprimeur est indisponible](#o6--un-imprimeur-est-indisponible)
-- [O7 · Un artiste est absent](#o7--un-artiste-est-absent)
+- [O7 · Un graphiste est absent](#o7--un-graphiste-est-absent)
 - [O8 · Une campagne promo doit être désactivée](#o8--une-campagne-promo-doit-être-désactivée)
 - [O9 · Mises à jour et maintenance](#o9--mises-à-jour-et-maintenance)
 - [Contacts opérationnels](#contacts-opérationnels)
@@ -148,19 +148,19 @@
 
 ---
 
-## O7 · Un artiste est absent
+## O7 · Un graphiste est absent
 
 **Niveau** : 🟡 · **Durée estimée** : variable · **Symptômes** : des commandes restent en file **En création** sans déclinaisons déposées.
 
 ### Étapes
 
 1. **Identifier les commandes en attente** : file **En création** (`en_creation`) et **À traiter** (`recue`).
-2. **Répartition** : assigne les commandes à un autre artiste.
-3. **Traitement manuel** : chaque artiste ouvre la commande, consulte photo + avatar de référence, puis **« Déposer les 3 déclinaisons »**.
-4. **Si aucun artiste n'est disponible** : préviens le gestionnaire pour **désactiver temporairement** la création (ou allonger les promesses de délai). Le site reste fonctionnel pour la prise de commande ; documente le ralentissement.
+2. **Répartition** : assigne les commandes à un autre graphiste.
+3. **Traitement manuel** : chaque graphiste ouvre la commande, consulte photo + avatar de référence, génère les 3 déclinaisons avec l'**outil par IA** (prompts de style), les ajuste, puis **« Déposer les 3 déclinaisons »**.
+4. **Si aucun graphiste n'est disponible** : préviens le gestionnaire pour **désactiver temporairement** la création (ou allonger les promesses de délai). Le site reste fonctionnel pour la prise de commande ; documente le ralentissement.
 5. **Retard** : les créations promises en **1 heure** doivent être respectées ; en cas d'incapacité, contacte les clients concernés avec les nouveaux délais.
 
-> 🖼 **À compléter** : liste des artistes actifs et leurs rôles (voir Contacts opérationnels).
+> 🖼 **À compléter** : liste des graphistes actifs et leurs rôles (voir Contacts opérationnels).
 
 ---
 
@@ -212,7 +212,7 @@ npx supabase functions deploy generate-print-pdf --project-ref xgfageatdfugxeinc
 | Support / WhatsApp | +225 05 45 29 82 80 | Fil WhatsApp officiel |
 | Téléphone | +225 07 16 53 55 80 | Ligne principale |
 | Atelier / Admin | via `/admin` | Connexion email/mdp |
-| **Artistes actifs** | **À compléter** | Liste et répartition |
+| **Graphistes actifs** | **À compléter** | Liste et répartition |
 | **Imprimeurs partenaires** | **À compléter** | Liste, délais, zone de livraison |
 | **Horaires d'exploitation** | **À compléter** | Plages de prise en charge des commandes |
 

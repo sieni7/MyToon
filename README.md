@@ -27,7 +27,7 @@ Se faire personnaliser un vêtement à son effigie, c'est long, opaque et réser
 MyToon inverse tout ça :
 
 - **1 heure** pour recevoir **3 propositions** de ton toon — choisies par toi.
-- Un vrai **artiste**, pas un filtre : chaque déclinaison est dessinée à la main à partir de ta photo.
+- Un **graphiste + IA** : chaque déclinaison est créée à partir de ta photo sous la supervision d'un artiste.
 - Un **suivi en temps réel** avec un simple code `MT-XXXX`.
 - Un **fichier d'impression professionnel** (PDF A4 / DTF) transmis à l'imprimeur.
 - Un **t-shirt ou polo coton local**, livré en **24-48 h** à Abidjan, **payé à la livraison**.
@@ -130,7 +130,7 @@ flowchart LR
 | **Hébergement** | Netlify | Deploy automatique sur push `master` |
 | **CLI BDD** | Supabase CLI | Migrations versionnées + deploy Edge |
 
-> ℹ️ **Note sur l'IA** : MyToon n'utilise pas de transformation automatique par IA. Chaque toon est **dessiné à la main par un artiste** à partir de ta photo — c'est la différence qualitative du produit. Voir [DECISIONS.md](docs/developers/DECISIONS.md) (DEC-001).
+> ℹ️ **Note sur l'IA** : MyToon combine un **graphiste humain** et un **outil de génération par IA** (prompts de style — `public/prompts.txt`) pour créer les **3 déclinaisons toon**. L'IA produit, le graphiste sélectionne, ajuste et valide. C'est la différence qualitative du produit. Voir [DECISIONS.md](docs/developers/DECISIONS.md) (DEC-001).
 
 ---
 

@@ -15,6 +15,7 @@
 - Nouveaux documents utilisateurs : `TUTORIELS.md`, `FAQ.md`.
 - Nouveaux documents admin : `GUIDE-ADMIN.md`, `OPERATIONS.md`.
 - Nouveaux documents produit : `PRODUCT.md`, `ROADMAP.md`, `CHANGELOG.md`.
+- Correction du récit création : le graphiste utilise un **outil de génération par IA** (prompts de style — `public/prompts.txt`) pour créer les **3 déclinaisons**, sous supervision humaine (DEC-001 revu). Documents alignés : `README.md`, `PRODUCT.md`, `FAQ.md`, `CENTRE-AIDE.md`, `GUIDE-ADMIN.md`, `OPERATIONS.md`, `DECISIONS.md`.
 
 ---
 

@@ -33,7 +33,7 @@ MyToon transforme une simple photo de toi en **personnage de bande dessinée** �
 ### Le concept
 
 1. Tu nous envoies une photo de ton visage.
-2. Un **artiste** (une vraie personne, pas une machine) dessine **3 versions différentes** de toi dans le style que tu as choisi.
+2. Un **graphiste** (assisté par IA) crée **3 versions différentes** de toi dans le style que tu as choisi.
 3. Tu choisis celle que tu préfères.
 4. On l'imprime sur ton vêtement et on te le livre à Abidjan.
 
@@ -71,7 +71,7 @@ Voici le parcours complet, de A à Z. Chronomètre en main : la partie « comman
 | --- | --- | --- |
 | 1️⃣ | **Choisis ton style** (Manga, Comics, Pop Art) et ton support (t-shirt ou polo) | 30 s |
 | 2️⃣ | **Envoie ta photo** (une photo de ton visage) et remplis tes infos de livraison | 1 min |
-| 3️⃣ | **La création** — nos artistes dessinent 3 déclinaisons de ton toon | 1 heure (nous) |
+| 3️⃣ | **La création** — nos graphistes créent 3 déclinaisons de ton toon (assistés par IA) | 1 heure (nous) |
 | 4️⃣ | **Tu valides** — tu choisis ta déclinaison préférée | 2 min |
 | 5️⃣ | **Fichier d'impression** — nous préparons le fichier pour l'imprimeur | (nous) |
 | 6️⃣ | **Livraison** — ton t-shirt livré en 24-48 h à Abidjan, paiement à la livraison | 24-48 h |
@@ -102,7 +102,7 @@ Voici le parcours complet, de A à Z. Chronomètre en main : la partie « comman
 
 ## 3. Comment transformer ta photo
 
-Notre équipe d'artistes va dessiner ton toon à partir de ta photo. Pour un résultat **exceptionnel**, voici tout ce qu'il faut savoir.
+Notre équipe de graphistes va créer ton toon (assistés par IA) à partir de ta photo. Pour un résultat **exceptionnel**, voici tout ce qu'il faut savoir.
 
 ### Bien choisir ta photo
 
@@ -218,7 +218,7 @@ Une fois que tu as reçu ton vêtement, n'hésite pas à **prendre une photo** d
 | | Pratique | Pourquoi |
 | --- | --- | --- |
 | ☀️ | **Photo en lumière naturelle** | Les couleurs sont fidèles, le visage est bien détaillé |
-| 📷 | **Selfie ou portrait récent** | L'artiste dessine ce qu'il voit |
+| 📷 | **Selfie ou portrait récent** | Le graphiste crée à partir de ce qu'il voit |
 | 👤 | **Une seule personne, de face** | Le focus est 100 % sur toi |
 | 😐 | **Expression neutre ou sourire** | Les traits sont nets et expressifs |
 | 🖼️ | **Visage entier visible** | Front, yeux et menton dans le cadre |
@@ -229,9 +229,9 @@ Une fois que tu as reçu ton vêtement, n'hésite pas à **prendre une photo** d
 | | Pratique | Résultat |
 | --- | --- | --- |
 | 🌫️ | **Photo floue ou bougée** | Traits imprécis, rendu décevant |
-| 😎 | **Lunettes de soleil / chapeau cachant les yeux** | L'artiste ne voit pas ton visage |
+| 😎 | **Lunettes de soleil / chapeau cachant les yeux** | Le graphiste ne voit pas ton visage |
 | 👨👩👧 | **Photo de groupe** | Impossible de transformer une seule personne |
-| 🎨 | **Photo trop filtrée** | L'artiste dessine le filtre, pas toi |
+| 🎨 | **Photo trop filtrée** | Le graphiste reproduit le filtre, pas toi |
 | 🌑 | **Contre-jour (visage sombre)** | Traits invisibles |
 | 📸 | **Flash direct de nuit** | Couleurs « écrasées », teint irréaliste |
 

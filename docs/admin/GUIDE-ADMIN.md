@@ -1,6 +1,6 @@
 # 🛠️ Guide de l'administrateur — MyToon
 
-> Public : **administrateurs et opérateurs non développeurs** (artistes, imprimeurs, gestionnaire).
+> Public : **administrateurs et opérateurs non développeurs** (graphistes, imprimeurs, gestionnaire).
 > Ce manuel décrit, pas à pas, le travail quotidien dans l'**Atelier MyToon**.
 > Portail : [`docs/README.md`](../README.md)
 
@@ -64,7 +64,7 @@ Les cartes numérotées en haut (et les filtres sous la barre) permettent de fil
 
 ## 4. Créer les 3 déclinaisons
 
-Cette étape est le **cœur du travail d'artiste** dans l'atelier.
+Cette étape est le **cœur du travail de graphiste** dans l'atelier.
 
 1. Ouvre une commande dans la file **À traiter** (`recue`) ou **En création** (`en_creation`).
 2. Consulte les 3 blocs d'information :
@@ -72,7 +72,7 @@ Cette étape est le **cœur du travail d'artiste** dans l'atelier.
    - **📷 Photo du client** : la photo source.
    - **🦸 Avatar de référence** : le style toon à recréer (Manga, Comics ou Pop Art).
 3. Clique sur **« Marquer en création »** (pour une commande `recue`) : la commande passe dans la file **En création**.
-4. **Dessine les 3 déclinaisons** du style choisi à partir de la photo et de l'avatar de référence.
+4. **Crée les 3 déclinaisons** du style choisi à partir de la photo et de l'avatar de référence, à l'aide de l'**outil de génération par IA** (prompts de style — voir [`public/prompts.txt`](../../public/prompts.txt)). Sélectionne, ajuste et valide chaque toon.
 5. Clique sur **« Déposer les 3 déclinaisons »** et sélectionne les **3 images** (ordre : déclinaison 1, 2, 3).
 
 > ⚠️ Le dépôt des 3 images passe automatiquement la commande au statut **`propositions_pretes`** (file **En validation client**). Un dépôt partiel n'est pas prévu : prépare tes 3 images avant de déposer.

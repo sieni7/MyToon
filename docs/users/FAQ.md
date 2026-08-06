@@ -56,7 +56,8 @@ Parce que la commande attend **ta validation**. Une commande ne passe jamais en 
 **Abidjan uniquement** (livraison 24-48 h). D'autres villes sont envisagées **À compléter**.
 
 ### A14. Les artistes sont-ils des IA ?
-Non. Chaque toon est **dessiné à la main par un artiste humain** à partir de ta photo. C'est la différence qualitative du produit (voir [`DECISIONS.md`](../developers/DECISIONS.md), DEC-001).
+
+Ce sont des **graphistes humains assistés par IA** : ils utilisent un outil de génération par IA (prompts de style — Manga, Comics, Pop Art) pour créer tes 3 déclinaisons, puis sélectionnent, ajustent et valident chaque toon. Un rendu personnalisé, pas un filtre automatique (voir [`DECISIONS.md`](../developers/DECISIONS.md), DEC-001).
 
 ### A15. Mes données sont-elles protégées ?
 Oui. Photos et données sont stockées dans un espace **privé** (URLs signées, accès limité). Voir la section Confidentialité du [`CENTRE-AIDE.md`](CENTRE-AIDE.md) et [`SECURITY.md`](../developers/SECURITY.md).

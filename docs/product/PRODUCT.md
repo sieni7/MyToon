@@ -9,7 +9,7 @@
 1. [Vision & mission](#1-vision--mission)
 2. [Pourquoi Abidjan](#2-pourquoi-abidjan)
 3. [Pourquoi le streetwear](#3-pourquoi-le-streetwear)
-4. [Pourquoi des artistes humains (pas d'IA)](#4-pourquoi-des-artistes-humains-pas-dia)
+4. [Graphiste + IA : la création des 3 déclinaisons](#4-graphiste--ia--la-création-des-3-déclinaisons)
 5. [Slogans & expressions de marque](#5-slogans--expressions-de-marque)
 6. [Les 4 valeurs](#6-les-4-valeurs)
 7. [La promesse client](#7-la-promesse-client)
@@ -27,7 +27,7 @@
 
 **Vision** : faire de la personnalisation d'exception une expérience simple, rapide et accessible — pour l'Afrique d'abord, ouverte au monde.
 
-**Mission** : chaque personne mérite son propre héros. MyToon transforme une simple photo en une œuvre portée : un t-shirt ou un polo 100 % coton local, illustré par un artiste humain, livré à Abidjan en 24-48 h.
+**Mission** : chaque personne mérite son propre héros. MyToon transforme une simple photo en une œuvre portée : un t-shirt ou un polo 100 % coton local, illustré par un graphiste assisté par IA, livré à Abidjan en 24-48 h.
 
 **Le problème résolu** : se faire personnaliser un vêtement est long, opaque et réservé à une poignée d'artisans. Le client ne voit rien, ne choisit rien, et attend des semaines sans savoir où en est sa commande. MyToon inverse tout ça : visibilité totale, choix réel, 1 h de création, suivi en temps réel.
 
@@ -51,19 +51,20 @@
 
 ---
 
-## 4. Pourquoi des artistes humains (pas d'IA)
+## 4. Graphiste + IA : la création des 3 déclinaisons
 
 > **Décision produit fondatrice — voir [`DECISIONS.md`](../developers/DECISIONS.md), DEC-001.**
 
-- MyToon n'utilise **pas** de transformation automatique par IA : chaque toon est **dessiné à la main par un artiste** à partir de la photo du client.
-- C'est la **différence qualitative** du produit : un rendu vivant, expressif, qui ne ressemble pas à un filtre.
+- MyToon combine un **graphiste humain** et un **outil de génération par IA** (prompts de style — [`public/prompts.txt`](../../public/prompts.txt)) pour créer les **3 déclinaisons toon** du client.
+- Le graphiste **sélectionne, ajuste et valide** chaque toon avant de le déposer : l'IA produit, l'humain décide.
+- C'est la **différence qualitative** du produit : un rendu personnalisé, expressif, qui ne ressemble pas à un filtre générique en 1 clic.
 - Conséquences assumées :
   - la création prend **1 heure** (pas instantanée) ;
   - le client reçoit **3 déclinaisons** à choisir (co-création) ;
   - le coût de création est **inclus** dans le prix du vêtement ;
   - chaque style (Manga, Comics, Pop Art) a une identité artistique propre, documentée dans `src/utils/constants.js`.
 
-> ⚠️ Le positionnement « artiste humain » doit rester cohérent dans **toute** la communication (site, support, réseaux) : ne jamais promettre une génération automatique ou instantanée.
+> ⚠️ Le positionnement « graphiste + IA » doit rester cohérent dans **toute** la communication (site, support, réseaux) : ne jamais promettre une génération 100 % automatique sans supervision humaine.
 
 ---
 
@@ -97,7 +98,7 @@ Déclarées dans le produit (`src/components/features/Features.jsx` — section 
 ## 7. La promesse client
 
 1. **3 déclinaisons en 1 heure** : tu reçois 3 propositions artistiques de ton toon, tu choisis.
-2. **Qualité artisanale** : chaque toon est dessiné à la main par un artiste, pas un filtre.
+2. **Qualité personnalisée** : chaque toon est créé par un graphiste assisté par IA à partir de ta photo, pas un filtre générique.
 3. **Suivi en temps réel** : un simple code `MT-XXXX` te montre les 7 statuts.
 4. **Livraison 24-48 h** à Abidjan, paiement **à la livraison**.
 5. **Fichier d'impression professionnel** : PDF A4 / DTF transmis à l'imprimeur partenaire.
@@ -172,8 +173,8 @@ flowchart LR
 | --- | --- |
 | **Catégorie** | Streetwear personnalisé « toon » |
 | **Public cible** | Jeunes urbains d'Abidjan et au-delà, amateurs de culture pop (Manga/Comics) |
-| **Différenciateur** | Artiste **humain** + **3 déclinaisons en 1 h** + **suivi transparent** + paiement à la livraison |
-| **Anti-positionnement** | Pas une usine à filtres IA, pas une marketplace impersonnelle, pas un luxe inaccessible |
+| **Différenciateur** | Graphiste **+ IA** + **3 déclinaisons en 1 h** + **suivi transparent** + paiement à la livraison |
+| **Anti-positionnement** | Pas une usine à filtres IA sans supervision, pas une marketplace impersonnelle, pas un luxe inaccessible |
 | **Géographie** | Abidjan (livraison 24-48 h) — horizon : ouverture **À compléter** |
 
 ---
